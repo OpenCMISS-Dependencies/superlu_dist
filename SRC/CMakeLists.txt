@@ -1,8 +1,11 @@
 SET(ALLAUX sp_ienv.c etree.c sp_colorder.c get_perm_c.c
     mmd.c comm.c memory.c util.c superlu_grid.c
 	pxerbla.c superlu_timer.c GetDiagU.c symbfact.c
-	psymbfact.c psymbfact_util.c get_perm_c_parmetis.c mc64ad_dist.c
+	psymbfact.c psymbfact_util.c mc64ad_dist.c
 	static_schedule.c)
+if (USE_PARMETIS)
+    LIST(APPEND ALLAUX get_perm_c_parmetis.c)
+endif()
 
 #### LAPACK auxiliary routines	
 SET(LAAUX lsame.c xerbla.c slamch.c dlamch.c)
@@ -39,17 +42,24 @@ add_library(superlu_dist STATIC ${SRC_DOUBLE})
 #target_compile_options(superlu_dist )
 target_compile_definitions(superlu_dist PUBLIC 
     USE_VENDOR_BLAS # using ocms blas
-    NoChange  # no change for fortran linking
+    Add_  # no change for fortran linking
     DEBUGlevel=0 PRNTlevel=1 PROFlevel=0 # misc
     _LONGINT # build type
 )
 
 target_link_libraries(superlu_dist 
-    PUBLIC blas parmetis metis 
-           ${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES}
+    PUBLIC blas
+           #${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES}
+ #          $<$<BOOL:${USE_PARMETIS}>:parmetis metis>
+  #         $<$<BOOL:${USE_METIS}>:metis>
 )
+if (USE_PARMETIS)
+    target_link_libraries(superlu_dist PUBLIC parmetis metis)
+elseif (USE_METIS)
+    target_link_libraries(superlu_dist PUBLIC metis)
+endif()
 target_include_directories(superlu_dist 
-    PUBLIC SRC ${MPI_C_INCLUDE_PATH} ${MPI_Fortran_INCLUDE_PATH}
+    PUBLIC SRC #${MPI_C_INCLUDE_PATH} ${MPI_Fortran_INCLUDE_PATH}
 )
 set_target_properties(superlu_dist PROPERTIES OUTPUT_NAME superlu-dist-${SUPERLU_DIST_VERSION})
 

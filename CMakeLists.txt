@@ -4,27 +4,35 @@ project (SUPERLU_DIST VERSION 4.3 LANGUAGES C Fortran)
 if (OPENCMISS_DEPENDENCIES_LIBRARIES)
     SET(CMAKE_PREFIX_PATH ${OPENCMISS_DEPENDENCIES_CONFIGS_DIR} ${CMAKE_PREFIX_PATH})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OPENCMISS_DEPENDENCIES_LIBRARIES})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OPENCMISS_DEPENDENCIES_LIBRARIES})
 else()
-    SET(CMAKE_PREFIX_PATH /people/dwir109/ocms/dependencies/cmake ${CMAKE_PREFIX_PATH})
+    SET(CMAKE_PREFIX_PATH ../cmake/release ../cmake/debug ${CMAKE_PREFIX_PATH})
     SET(OPENCMISS_DEPENDENCIES_CONFIGS_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    SET(BUILD_TESTING ON)
+    SET(USE_PARMETIS ON)
 endif()
-set(BUILD_TESTING ON)
 
 find_package(BLAS CONFIG REQUIRED)
-find_package(PARMETIS CONFIG REQUIRED)
+if (USE_PARMETIS)
+    find_package(PARMETIS CONFIG REQUIRED)
+elseif(USE_METIS)
+    find_package(METIS 4 CONFIG REQUIRED)
+endif()
+
 find_package(MPI REQUIRED)
+
 SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
 SET(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
-
-#if (BUILD_TESTING)
-#    enable_testing()
-#    find_package(LAPACK CONFIG REQUIRED)
-#    find_package(tmglib CONFIG REQUIRED)
-#endif()
-
-SET(CMAKE_C_FLAGS "-std=c99 -O3 -Wall -openmp") # not recognized: -w2 -mkl
-SET(CMAKE_Fortran_FLAGS "-fast -Mnomain")
+SET(CMAKE_C_FLAGS "-std=c99 -openmp")
+SET(CMAKE_C_FLAGS_RELEASE "-O3") # not recognized: -w2 -mkl
+SET(CMAKE_C_FLAGS_DEBUG "-O0 -Wall")
+SET(CMAKE_Fortran_FLAGS "-Mnomain")
+SET(CMAKE_Fortran_FLAGS_RELEASE "-fast")
+#SET(CMAKE_Fortran_FLAGS_DEBUG )
 
 # collecting source file defs in subdirectory
 add_subdirectory(SRC)
+
+if (BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(EXAMPLE)
+endif()
