@@ -6,7 +6,7 @@ macro(LINK TARGET)
     if (UNIX)
         target_link_libraries(${TARGET} PRIVATE m)
     endif()
-    target_compile_definitions(${TARGET} PUBLIC Add_)
+    #target_compile_definitions(${TARGET} PUBLIC Add_)
 endmacro()
 
 add_executable(pddrive pddrive.c dcreate_matrix.c)

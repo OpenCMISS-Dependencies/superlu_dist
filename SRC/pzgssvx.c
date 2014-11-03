@@ -920,6 +920,7 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 
 	if ( permc_spec != MY_PERMC && Fact == DOFACT ) {
 	  if ( permc_spec == PARMETIS ) {
+#ifdef PARMETIS
 	      /* Get column permutation vector in perm_c.                    *
 	       * This routine takes as input the distributed input matrix A  *
 	       * and does not modify it.  It also allocates memory for       *
@@ -930,6 +931,9 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
                                            grid, &symb_comm);
 	      if (flinfo > 0)
 	          ABORT("ERROR in get perm_c parmetis.");
+#else
+	      ABORT("Not compiled with ParMETIS");
+#endif
 	  } else {
 	      get_perm_c_dist(iam, permc_spec, &GA, perm_c);
           }

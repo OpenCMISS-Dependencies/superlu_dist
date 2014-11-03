@@ -463,6 +463,7 @@ get_perm_c_dist(int_t pnum, int_t ispec, SuperMatrix *A, int_t *perm_c)
 	      break;
 
         case METIS_AT_PLUS_A: /* METIS ordering on A'+A */
+#ifdef METIS
 	      if ( m != n ) ABORT("Matrix is not square");
 	      at_plus_a_dist(n, Astore->nnz, Astore->colptr, Astore->rowind,
 			     &bnz, &b_colptr, &b_rowind);
@@ -476,8 +477,12 @@ get_perm_c_dist(int_t pnum, int_t ispec, SuperMatrix *A, int_t *perm_c)
 	      }
 
 #if ( PRNTlevel>=1 )
-	      if ( !pnum ) printf(".. Use METIS ordering on A'+A\n");
+		  if ( !pnum ) printf(".. Use METIS ordering on A'+A\n");
 #endif
+#else
+		  ABORT("Not compiled with METIS! Set USE_METIS flag.");
+#endif
+
 	      return;
 
         default:

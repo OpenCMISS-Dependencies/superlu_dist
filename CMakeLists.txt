@@ -1,15 +1,10 @@
 cmake_minimum_required (VERSION 3.0)
 project (SUPERLU_DIST VERSION 4.3 LANGUAGES C Fortran)
 
-if (OPENCMISS_DEPENDENCIES_LIBRARIES)
-    SET(CMAKE_PREFIX_PATH ${OPENCMISS_DEPENDENCIES_CONFIGS_DIR} ${CMAKE_PREFIX_PATH})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OPENCMISS_DEPENDENCIES_LIBRARIES})
-else()
-    SET(CMAKE_PREFIX_PATH ../cmake/release ../cmake/debug ${CMAKE_PREFIX_PATH})
-    SET(OPENCMISS_DEPENDENCIES_CONFIGS_DIR ${CMAKE_CURRENT_BINARY_DIR})
-    SET(BUILD_TESTING ON)
-    SET(USE_PARMETIS ON)
-endif()
+option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
+set(BUILD_PRECISION dz CACHE STRING "${PROJECT_NAME} - Build precisions (d|z|dz)")
+option(USE_PARMETIS "Use ParMETIS library" OFF)
+option(USE_METIS "Use METIS library" ON)
 
 find_package(BLAS CONFIG REQUIRED)
 if (USE_PARMETIS)
@@ -32,7 +27,7 @@ SET(CMAKE_Fortran_FLAGS_RELEASE "-fast")
 # collecting source file defs in subdirectory
 add_subdirectory(SRC)
 
-if (BUILD_TESTING)
+if (BUILD_TESTS)
     enable_testing()
     add_subdirectory(EXAMPLE)
 endif()
