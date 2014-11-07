@@ -53,11 +53,19 @@ SET(OBJS )
 if(BUILD_PRECISION MATCHES [d])
     add_library(slud_d OBJECT ${SRC_d})
     target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
+    target_include_directories(slud_d PRIVATE
+         $<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis4,INTERFACE_INCLUDE_DIRECTORIES>>
+         $<$<BOOL:${USE_PARMETIS}>:$<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>>
+    )
     LIST(APPEND OBJS "$<TARGET_OBJECTS:slud_d>")
 endif()
 if(BUILD_PRECISION MATCHES [z])
     add_library(slud_z OBJECT ${SRC_z})
-    target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
+    target_compile_definitions(slud_z PUBLIC ${COMPDEFS})
+    target_include_directories(slud_z PRIVATE
+         $<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis4,INTERFACE_INCLUDE_DIRECTORIES>>
+         $<$<BOOL:${USE_PARMETIS}>:$<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>>
+    )
     LIST(APPEND OBJS "$<TARGET_OBJECTS:slud_z>")
 endif()
 
@@ -70,11 +78,10 @@ target_link_libraries(superlu_dist
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
 elseif (USE_METIS)
-    target_link_libraries(superlu_dist PUBLIC metis)
+    target_link_libraries(superlu_dist PUBLIC metis4)
 endif()
 target_include_directories(superlu_dist 
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SRC>
-    #${MPI_C_INCLUDE_PATH} ${MPI_Fortran_INCLUDE_PATH}
 )
 set_target_properties(superlu_dist PROPERTIES
     OUTPUT_NAME superlu-dist-${SUPERLU_DIST_VERSION})
