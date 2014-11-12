@@ -24,7 +24,7 @@ void
 zreadtriple(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 	    doublecomplex **nzval, int_t **rowind, int_t **colptr)
 {
-    int_t    j, k, jsize, nnz, nz, new_nonz;
+    int_t    i, j, k, jsize, lasta, nnz, nz, new_nonz;
     doublecomplex *a, *val;
     int_t    *asub, *xa, *row, *col;
     int_t    zero_base = 0;
@@ -35,10 +35,11 @@ zreadtriple(FILE *fp, int_t *m, int_t *n, int_t *nonz,
      *                 row    col    value
      */
 
+    /*fscanf(fp, "%d%d%d", m, n, nonz);*/
 #ifdef _LONGINT
-    fscanf(fp, "%ld%ld%ld", m, n, nonz);
+    fscanf(fp, "%ld%ld", n, nonz);
 #else
-    fscanf(fp, "%d%d%d", m, n, nonz);
+    fscanf(fp, "%d%d", n, nonz);
 #endif
 
 #ifdef EXPAND_SYM
@@ -47,7 +48,7 @@ zreadtriple(FILE *fp, int_t *m, int_t *n, int_t *nonz,
     new_nonz = *nonz;
 #endif
     *m = *n;
-    printf("m %ld, n %ld, nonz %ld\n", (long long) *m, (long long) *n, (long long) *nonz);
+    printf("m %ld, n %ld, nonz %ld\n", *m, *n, *nonz);
     zallocateA_dist(*n, new_nonz, nzval, rowind, colptr); /* Allocate storage */
     a    = *nzval;
     asub = *rowind;
@@ -85,8 +86,8 @@ zreadtriple(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 
 	if (row[nz] < 0 || row[nz] >= *m || col[nz] < 0 || col[nz] >= *n
 	    /*|| val[nz] == 0.*/) {
-	    fprintf(stderr, "nz %d, (%d, %d) = {%e\t%e} out of bound, removed\n", 
-		    nz, row[nz], col[nz], val[nz].r, val[nz].i);
+	    fprintf(stderr, "nz %d, (%d, %d) = %e out of bound, removed\n", 
+		    nz, row[nz], col[nz], val[nz]);
 	    exit(-1);
 	} else {
 	    ++xa[col[nz]];
@@ -138,7 +139,6 @@ zreadtriple(FILE *fp, int_t *m, int_t *n, int_t *nonz,
     SUPERLU_FREE(col);
 
 #ifdef CHK_INPUT
-    int i;
     for (i = 0; i < *n; i++) {
 	printf("Col %d, xa %d\n", i, xa[i]);
 	for (k = xa[i]; k < xa[i+1]; k++)
@@ -152,7 +152,7 @@ zreadtriple(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 void zreadrhs(int m, doublecomplex *b)
 {
     FILE *fp, *fopen();
-    int i;
+    int i, j;
 
     if ( !(fp = fopen("b.dat", "r")) ) {
         fprintf(stderr, "zreadrhs: file does not exist\n");

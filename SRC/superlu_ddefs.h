@@ -57,9 +57,9 @@ typedef struct {
 			       */
 
     /*-- Record communication schedule for factorization. --*/
-    int   *ToRecv;          /* Recv from no one (0), left (1), and up (2).*/
-    int   *ToSendD;         /* Whether need to send down block row.       */
-    int   **ToSendR;        /* List of processes to send right block col. */
+    int_t   *ToRecv;          /* Recv from no one (0), left (1), and up (2).*/
+    int_t   *ToSendD;         /* Whether need to send down block row.       */
+    int_t   **ToSendR;        /* List of processes to send right block col. */
 
     /*-- Record communication schedule for forward/back solves. --*/
     int_t   *fmod;            /* Modification count for L-solve            */
@@ -215,10 +215,6 @@ extern void    dFillRHS_dist (char *, int_t, double *, int_t,
                               SuperMatrix *, double *, int_t);
 extern int     dcreate_matrix(SuperMatrix *, int, double **, int *, 
 			      double **, int *, FILE *, gridinfo_t *);
-extern int     dcreate_matrix_rb(SuperMatrix *, int, double **, int *, 
-			      double **, int *, FILE *, gridinfo_t *);
-extern int     dcreate_matrix_dat(SuperMatrix *, int, double **, int *, 
-			      double **, int *, FILE *, gridinfo_t *);
 
 /* Driver related */
 extern void    dgsequ_dist (SuperMatrix *, double *, double *, double *,
@@ -239,8 +235,9 @@ extern int     sp_dtrsv_dist (char *, char *, char *, SuperMatrix *,
 			      SuperMatrix *, double *, int *);
 extern int     sp_dgemv_dist (char *, double, SuperMatrix *, double *,
 			      int, double, double *, int);
-extern int     sp_dgemm_dist (char *, int, double, SuperMatrix *,
-                        double *, int, double, double *, int);
+extern int     sp_dgemm_dist (char *, char *, int, int, int, double,
+			SuperMatrix *, double *, int, double, 
+			double *, int);
 
 extern float ddistribute(fact_t, int_t, SuperMatrix *, Glu_freeable_t *, 
 			 LUstruct_t *, gridinfo_t *);
@@ -262,15 +259,8 @@ extern int_t pxgstrs_init(int_t, int_t, int_t, int_t,
 	                  Glu_persist_t *, SOLVEstruct_t *);
 extern void pxgstrs_finalize(pxgstrs_comm_t *);
 extern void dSolveFinalize(superlu_options_t *, SOLVEstruct_t *);
-extern void dldperm_dist(int_t, int_t, int_t, int_t [], int_t [],
+extern void dldperm(int_t, int_t, int_t, int_t [], int_t [],
 		    double [], int_t *, double [], double []);
-extern int  static_schedule(superlu_options_t *, int, int, 
-		            LUstruct_t *, gridinfo_t *, SuperLUStat_t *,
-			    int_t *, int_t *, int *);
-
-/* #define GPU_PROF
-#define IPM_PROF */
-
 extern int_t pdgstrf(superlu_options_t *, int, int, double,
 		    LUstruct_t*, gridinfo_t*, SuperLUStat_t*, int*);
 extern void pdgstrs_Bglobal(int_t, LUstruct_t *, gridinfo_t *,
@@ -311,10 +301,9 @@ extern double  *doubleMalloc_dist(int_t);
 extern double  *doubleCalloc_dist(int_t);
 extern void  *duser_malloc_dist (int_t, int_t);
 extern void  duser_free_dist (int_t, int_t);
-extern int_t dQuerySpace_dist(int_t, LUstruct_t *, gridinfo_t *,
-			      SuperLUStat_t *, mem_usage_t *);
+extern int_t dQuerySpace_dist(int_t, LUstruct_t *, gridinfo_t *, mem_usage_t *);
 extern void    Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
-extern void    LUstructInit(const int_t, LUstruct_t *);
+extern void    LUstructInit(const int_t, const int_t, LUstruct_t *);
 extern void    LUstructFree(LUstruct_t *);
 
 /* Auxiliary routines */
@@ -325,52 +314,36 @@ extern void    pdinf_norm_error(int, int_t, int_t, double [], int_t,
 				double [], int_t , gridinfo_t *);
 extern void  dreadhb_dist (int, FILE *, int_t *, int_t *, int_t *, 
 			   double **, int_t **, int_t **);
-extern void  dreadtriple(FILE *, int_t *, int_t *, int_t *,
-			 double **, int_t **, int_t **);
-extern void  dreadrb_dist(FILE *, int_t *, int_t *, int_t *,
-		     double **, int_t **, int_t **);
 
 /* Distribute the data for numerical factorization */
 extern float ddist_psymbtonum(fact_t, int_t, SuperMatrix *,
                                 ScalePermstruct_t *, Pslu_freeable_t *, 
                                 LUstruct_t *, gridinfo_t *);
 
-
 /* Routines for debugging */
-extern void  dPrintLblocks(int, int_t, gridinfo_t *, Glu_persist_t *,
+extern void  dPrintLblocks(int_t, int_t, gridinfo_t *, Glu_persist_t *,
 		 	   LocalLU_t *);
-extern void  dPrintUblocks(int, int_t, gridinfo_t *, Glu_persist_t *,
+extern void  dPrintUblocks(int_t, int_t, gridinfo_t *, Glu_persist_t *,
 			   LocalLU_t *);
 extern void  dPrint_CompCol_Matrix_dist(SuperMatrix *);
 extern void  dPrint_Dense_Matrix_dist(SuperMatrix *);
 extern int   dPrint_CompRowLoc_Matrix_dist(SuperMatrix *);
 extern int   file_PrintDouble5(FILE *, char *, int_t, double *);
 
-
 /* BLAS */
 
 #ifdef USE_VENDOR_BLAS
-extern int dgemm_(const char*, const char*, const int*, const int*, const int*,
-                  const double*, const double*, const int*, const double*,
-                  const int*, const double*, double*, const int*, int, int);
+extern int dgemm_(char*, char*, int*, int*, int*, double*,
+                  double*, int*, double*, int*, double*,
+                  double*, int*, int, int);
 extern int dtrsv_(char*, char*, char*, int*, double*, int*,
                   double*, int*, int, int, int);
-extern int dtrsm_(char*, char*, char*, char*, int*, int*, 
-                  double*, double*, int*, double*, 
-                  int*, int, int, int, int);
-extern int dgemv_(char *, int *, int *, double *, double *a, int *, 
-                  double *, int *, double *, double *, int *, int);
 #else
-extern int dgemm_(const char*, const char*, const int*, const int*, const int*,
-                  const double*, const double*, const int*, 
-                  const double*, const int*, const double*,
-                  double*, const int*);
+extern int dgemm_(char*, char*, int*, int*, int*, double*,
+                  double*, int*, double*, int*, double*,
+                  double*, int*);
 extern int dtrsv_(char*, char*, char*, int*, double*, int*,
                   double*, int*);
-extern int dtrsm_(char*, char*, char*, char*, int*, int*, 
-                  double*, double*, int*, double*, int*);
-extern int dgemv_(char *, int *, int *, double *, double *a, int *, 
-                  double *, int *, double *, double *, int *);
 #endif
 
 extern int dger_(int*, int*, double*, double*, int*,

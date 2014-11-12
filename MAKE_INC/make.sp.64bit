@@ -22,21 +22,14 @@ PLAT		= _power5
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB      	= -lessl
 
-############################################################################
-## parmetis 4.x.x, 32-bit integer
-# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
-## parmetis 4.x.x, 64-bit integer
-PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
-
-METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
-I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
-############################################################################
+# need 64-bit libraries
+METISLIB        = -L/project/projectdirs/sparse/xiaoye/parmetis-3.1/64 -lmetis
+PARMETISLIB	= -L/project/projectdirs/sparse/xiaoye/parmetis-3.1/64 -lparmetis
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS	 	=
@@ -59,7 +52,7 @@ RANLIB       	= ranlib
 CC           	= mpcc_r
 # CFLAGS should be set to be the C flags that include optimization
 CFLAGS          = -D_SP -qarch=pwr5 -qalias=allptrs -q64 \
-		  -DDEBUGlevel=0 -DPRNTlevel=0 -O3 $(I_PARMETIS)
+		  -DDEBUGlevel=0 -DPRNTlevel=0 -O3
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 # 64-bit

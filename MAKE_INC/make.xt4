@@ -22,7 +22,7 @@ PLAT		= _xt4
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB	        =

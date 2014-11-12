@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     doublecomplex   *a, *b, *xtrue;
     int_t    *asub, *xa;
     int_t    i, j, m, n;
-    int      nprow, npcol, ldumap, p;
+    int_t    nprow, npcol, ldumap, p;
     int_t    usermap[6];
     int      iam, info, ldb, ldx, nprocs;
     int      nrhs = 1;   /* Number of right-hand side. */
@@ -150,17 +150,12 @@ int main(int argc, char *argv[])
          */
 	set_default_options_dist(&options);
 
-        if (!iam) {
-	    print_sp_ienv_dist(&options);
-    	    print_options_dist(&options);
-        }
-
         m = A.nrow;
         n = A.ncol;
 
 	/* Initialize ScalePermstruct and LUstruct. */
 	ScalePermstructInit(m, n, &ScalePermstruct);
-	LUstructInit(n, &LUstruct);
+	LUstructInit(m, n, &LUstruct);
 
 	/* Initialize the statistics variables. */
 	PStatInit(&stat);
@@ -225,7 +220,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize ScalePermstruct and LUstruct. */
 	ScalePermstructInit(m, n, &ScalePermstruct);
-	LUstructInit(n, &LUstruct);
+	LUstructInit(m, n, &LUstruct);
 
 	/* Initialize the statistics variables. */
 	PStatInit(&stat);

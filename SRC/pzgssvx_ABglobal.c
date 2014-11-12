@@ -479,7 +479,7 @@ pzgssvx_ABglobal(superlu_options_t *options, SuperMatrix *A,
     int_t    *perm_c; /* column permutation vector */
     int_t    *etree;  /* elimination tree */
     int_t    *colptr, *rowind;
-    int_t    Equil, factored, job, notran, colequ, rowequ;
+    int_t    colequ, Equil, factored, job, notran, rowequ;
     int_t    i, iinfo, j, irow, m, n, nnz, permc_spec, dist_mem_use;
     int      iam;
     int      ldx;  /* LDA for matrix X (global). */
@@ -647,11 +647,9 @@ pzgssvx_ABglobal(superlu_options_t *options, SuperMatrix *A,
 	    /* Equilibrate matrix A. */
 	    zlaqgs_dist(A, R, C, rowcnd, colcnd, amax, equed);
 	    if ( lsame_(equed, "R") ) {
-		ScalePermstruct->DiagScale = ROW;
-		rowequ = ROW;
+		ScalePermstruct->DiagScale = rowequ = ROW;
 	    } else if ( lsame_(equed, "C") ) {
-		ScalePermstruct->DiagScale = COL;
-		colequ = COL;
+		ScalePermstruct->DiagScale = colequ = COL;
 	    } else if ( lsame_(equed, "B") ) {
 		ScalePermstruct->DiagScale = BOTH;
 		rowequ = ROW;
@@ -697,7 +695,7 @@ pzgssvx_ABglobal(superlu_options_t *options, SuperMatrix *A,
 
 	    if ( !iam ) {
 		/* Process 0 finds a row permutation for large diagonal. */
-		zldperm_dist(job, m, nnz, colptr, rowind, a, perm_r, R1, C1);
+		zldperm(job, m, nnz, colptr, rowind, a, perm_r, R1, C1);
 		
 		MPI_Bcast( perm_r, m, mpi_int_t, 0, grid->comm );
 		if ( job == 5 && Equil ) {
@@ -853,12 +851,12 @@ pzgssvx_ABglobal(superlu_options_t *options, SuperMatrix *A,
 		QuerySpace_dist(n, -iinfo, Glu_freeable, &symb_mem_usage);
 #if ( PRNTlevel>=1 ) 
 		if ( !iam ) {
-		    printf("\tNo of supers %ld\n", (long long)Glu_persist->supno[n-1]+1);
-		    printf("\tSize of G(L) %ld\n", (long long)Glu_freeable->xlsub[n]);
-		    printf("\tSize of G(U) %ld\n", (long long)Glu_freeable->xusub[n]);
+		    printf("\tNo of supers %ld\n", Glu_persist->supno[n-1]+1);
+		    printf("\tSize of G(L) %ld\n", Glu_freeable->xlsub[n]);
+		    printf("\tSize of G(U) %ld\n", Glu_freeable->xusub[n]);
 		    printf("\tint %d, short %d, float %d, double %d\n", 
-			   (int) sizeof(int_t), (int) sizeof(short), 
- 			   (int) sizeof(float), (int) sizeof(double));
+			   sizeof(int_t), sizeof(short), sizeof(float),
+			   sizeof(double));
 		    printf("\tSYMBfact (MB):\tL\\U %.2f\ttotal %.2f\texpansions %d\n",
 			   symb_mem_usage.for_lu*1e-6, 
 			   symb_mem_usage.total*1e-6,
@@ -893,7 +891,7 @@ pzgssvx_ABglobal(superlu_options_t *options, SuperMatrix *A,
 	{
 	    int_t TinyPivots;
 	    float for_lu, total, max, avg, temp;
-	    zQuerySpace_dist(n, LUstruct, grid, stat, &num_mem_usage);
+	    zQuerySpace_dist(n, LUstruct, grid, &num_mem_usage);
 	    MPI_Reduce( &num_mem_usage.for_lu, &for_lu,
 		       1, MPI_FLOAT, MPI_SUM, 0, grid->comm );
 	    MPI_Reduce( &num_mem_usage.total, &total,

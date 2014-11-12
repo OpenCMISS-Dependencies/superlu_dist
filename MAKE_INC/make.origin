@@ -26,17 +26,8 @@ DSUPERLULIB     = $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 BLASDEF         = -DUSE_VENDOR_BLAS
 BLASLIB         = -lscs
 MPILIB		= -lmpi
-
-############################################################################
-## parmetis 4.x.x, 32-bit integer
-PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
-## parmetis 4.x.x, 64-bit integer
-# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
-
-METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
-I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
-############################################################################
+METISLIB	=
+PARMETISLIB	=
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS	 	= -lfortran
@@ -59,7 +50,7 @@ RANLIB          = touch
 CC              = cc
 ISA             = -64 -mips4 -TARG:platform=ip35
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = $(ISA) $(I_PARMETIS) -O2
+CFLAGS          = $(ISA) -O2
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 # This must be enforced to compile the two routines: slamch.c and dlamch.c.

@@ -29,10 +29,10 @@ int pdCompRow_loc_to_CompCol_global
     int_t *colind, *rowptr;
     int_t *colptr_loc, *rowind_loc;
     int_t m_loc, n, i, j, k, l;
-    int_t colnnz, fst_row, nnz_loc, nnz;
+    int_t colnnz, fst_row, m_loc_max, nnz_loc, nnz_max, nnz;
     double *a_recv;  /* Buffer to receive the blocks of values. */
     double *a_buf;   /* Buffer to merge blocks into block columns. */
-    int_t *itemp;
+    int_t *colcnt, *itemp;
     int_t *colptr_send; /* Buffer to redistribute the column pointers of the 
 			   local block rows.
 			   Use n_loc+1 pointers for each block. */

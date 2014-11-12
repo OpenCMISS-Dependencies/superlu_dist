@@ -142,7 +142,7 @@ void finalize_disjoint_sets (
  *      Modified by X.S. Li, November 1999.
  * </pre>
  */
-int
+int_t
 sp_symetree_dist(
 	    int_t *acolst, int_t *acolend, /* column starts and ends past 1 */
 	    int_t *arow,            /* row indices of A */
@@ -209,7 +209,7 @@ sp_symetree_dist(
  *      Based on code by JRG dated 1987, 1988, and 1990.
  * </pre>
  */
-int
+int_t
 sp_coletree_dist(
 	    int_t *acolst, int_t *acolend, /* column start and end past 1 */
 	    int_t *arow,                   /* row indices of A */

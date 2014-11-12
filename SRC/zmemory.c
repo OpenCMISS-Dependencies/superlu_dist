@@ -1,11 +1,10 @@
-
 /*! @file
  * \brief Memory utilities
  *
  * <pre>
- * -- Distributed SuperLU routine (version 4.0) --
+ * -- Distributed SuperLU routine (version 1.0) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
- * October 1, 2014
+ * September 1, 1999
  * </pre>
  */
 
@@ -14,36 +13,6 @@
 
 /* Variables external to this file */
 extern LU_stack_t stack;
-
-
-void *zuser_malloc_dist(int_t bytes, int_t which_end)
-{
-    void *buf;
-    
-    if ( StackFull(bytes) ) return (NULL);
-
-    if ( which_end == HEAD ) {
-	buf = (char*) stack.array + stack.top1;
-	stack.top1 += bytes;
-    } else {
-	stack.top2 -= bytes;
-	buf = (char*) stack.array + stack.top2;
-    }
-    
-    stack.used += bytes;
-    return buf;
-}
-
-
-void zuser_free_dist(int_t bytes, int_t which_end)
-{
-    if ( which_end == HEAD ) {
-	stack.top1 -= bytes;
-    } else {
-	stack.top2 += bytes;
-    }
-    stack.used -= bytes;
-}
 
 
 
@@ -60,9 +29,9 @@ void zuser_free_dist(int_t bytes, int_t which_end)
  * </pre>
  */
 int_t zQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
-		       SuperLUStat_t *stat, mem_usage_t *mem_usage)
+		       mem_usage_t *mem_usage)
 {
-    register int_t dword, gb, iword, k, nb, nsupers;
+    register int_t dword, gb, iword, k, maxsup, nb, nsupers;
     int_t *index, *xsup;
     int iam, mycol, myrow;
     Glu_persist_t *Glu_persist = LUstruct->Glu_persist;
@@ -73,9 +42,10 @@ int_t zQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
     mycol = MYCOL( iam, grid );
     iword = sizeof(int_t);
     dword = sizeof(doublecomplex);
+    maxsup = sp_ienv_dist(3);
     nsupers = Glu_persist->supno[n-1] + 1;
     xsup = Glu_persist->xsup;
-    mem_usage->for_lu = 0.;
+    mem_usage->for_lu = 0;
 
     /* For L factor */
     nb = CEILING( nsupers, grid->npcol ); /* Number of local column blocks */
@@ -106,7 +76,6 @@ int_t zQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
 
     /* Working storage to support factorization */
     mem_usage->total = mem_usage->for_lu;
-#if 0
     mem_usage->total +=
 	(float)(( Llu->bufmax[0] + Llu->bufmax[2] ) * iword +
 		( Llu->bufmax[1] + Llu->bufmax[3] + maxsup ) * dword );
@@ -116,18 +85,12 @@ int_t zQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
     mem_usage->total += (float)( maxsup * maxsup + maxsup) * iword;
     k = CEILING( nsupers, grid->nprow );
     mem_usage->total += (float)(2 * k * iword);
-#else
-    /*mem_usage->total += stat->current_buffer;*/
-    printf(".. zQuery_Space: peak_buffer %.f\n", stat->peak_buffer);
-    mem_usage->total += stat->peak_buffer;
-#endif
 
     return 0;
 } /* zQuerySpace_dist */
 
 
-/*
- * Allocate storage for original matrix A
+/*! \brief Allocate storage for original matrix A
  */
 void
 zallocateA_dist(int_t n, int_t nnz, doublecomplex **a, int_t **asub, int_t **xa)
@@ -141,7 +104,8 @@ zallocateA_dist(int_t n, int_t nnz, doublecomplex **a, int_t **asub, int_t **xa)
 doublecomplex *doublecomplexMalloc_dist(int_t n)
 {
     doublecomplex *buf;
-    buf = (doublecomplex *) SUPERLU_MALLOC( SUPERLU_MAX(1, n) * sizeof(doublecomplex) ); 
+    buf = (doublecomplex *) 
+	SUPERLU_MALLOC(SUPERLU_MAX(1, n) * sizeof(doublecomplex)); 
     return (buf);
 }
 
@@ -150,7 +114,8 @@ doublecomplex *doublecomplexCalloc_dist(int_t n)
     doublecomplex *buf;
     register int_t i;
     doublecomplex zero = {0.0, 0.0};
-    buf = (doublecomplex *) SUPERLU_MALLOC( SUPERLU_MAX(1, n) * sizeof(doublecomplex));
+    buf = (doublecomplex *) 
+	SUPERLU_MALLOC(SUPERLU_MAX(1, n) * sizeof(doublecomplex));
     if ( !buf ) return (buf);
     for (i = 0; i < n; ++i) buf[i] = zero;
     return (buf);

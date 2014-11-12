@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     double   *b, *b1, *xtrue, *nzval, *nzval1;
     int_t    *colind, *colind1, *rowptr, *rowptr1;
     int_t    i, j, m, n, nnz_loc, m_loc, fst_row;
-    int      nprow, npcol;
+    int_t    nprow, npcol;
     int      iam, info, ldb, ldx, nrhs;
     char     **cpp, c;
     FILE *fp, *fopen();
@@ -102,10 +102,7 @@ int main(int argc, char *argv[])
     /* Bail out if I do not belong in the grid. */
     iam = grid.iam;
     if ( iam >= nprow * npcol )	goto out;
-    if ( !iam ) {
-	printf("Input matrix file: %s\n", *cpp);
-        printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
-    }
+    if ( !iam ) printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
     
 #if ( DEBUGlevel>=1 )
     CHECK_MALLOC(iam, "Enter main()");
@@ -160,14 +157,9 @@ int main(int argc, char *argv[])
      */
     set_default_options_dist(&options);
 
-    if (!iam) {
-	print_sp_ienv_dist(&options);
-	print_options_dist(&options);
-    }
-
     /* Initialize ScalePermstruct and LUstruct. */
     ScalePermstructInit(m, n, &ScalePermstruct);
-    LUstructInit(n, &LUstruct);
+    LUstructInit(m, n, &LUstruct);
 
     /* Initialize the statistics variables. */
     PStatInit(&stat);

@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
     gridinfo_t grid;
     double   *berr;
     double   *b, *xtrue;
-    int    m, n;
-    int      nprow, npcol;
+    int_t    m, n;
+    int_t    nprow, npcol;
     int      iam, info, ldb, ldx, nrhs;
     char     **cpp, c;
     FILE *fp, *fopen();
@@ -96,10 +96,7 @@ int main(int argc, char *argv[])
     /* Bail out if I do not belong in the grid. */
     iam = grid.iam;
     if ( iam >= nprow * npcol )	goto out;
-    if ( !iam ) {
-	printf("Input matrix file: %s\n", *cpp);
-        printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
-    }
+    if ( !iam ) printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
 
 #if ( VAMPIR>=1 )
     VT_traceoff();
@@ -143,17 +140,12 @@ int main(int argc, char *argv[])
     options.ReplaceTinyPivot = NO;
 #endif
 
-    if (!iam) {
-	print_sp_ienv_dist(&options);
-	print_options_dist(&options);
-    }
-
     m = A.nrow;
     n = A.ncol;
 
     /* Initialize ScalePermstruct and LUstruct. */
     ScalePermstructInit(m, n, &ScalePermstruct);
-    LUstructInit(n, &LUstruct);
+    LUstructInit(m, n, &LUstruct);
 
     /* Initialize the statistics variables. */
     PStatInit(&stat);

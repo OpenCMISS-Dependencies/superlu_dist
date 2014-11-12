@@ -119,7 +119,6 @@ int main(int argc, char *argv[])
 	/* Read the matrix stored on disk in Harwell-Boeing format. */
 	dreadhb_dist(iam, fp, &m, &n, &nnz, &a, &asub, &xa);
 	
-	printf("Input matrix file: %s\n", *cpp);
 	printf("\tDimension\t%dx%d\t # nonzeros %d\n", m, n, nnz);
 	printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
 
@@ -178,14 +177,9 @@ int main(int argc, char *argv[])
      */
     set_default_options_dist(&options);
 
-    if (!iam) {
-	print_sp_ienv_dist(&options);
-	print_options_dist(&options);
-    }
-
     /* Initialize ScalePermstruct and LUstruct. */
     ScalePermstructInit(m, n, &ScalePermstruct);
-    LUstructInit(n, &LUstruct);
+    LUstructInit(m, n, &LUstruct);
 
     /* Initialize the statistics variables. */
     PStatInit(&stat);

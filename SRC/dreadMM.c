@@ -6,7 +6,7 @@
  * Contributed by Francois-Henry Rouet.
  *
  */
-#include <ctype.h>
+#include <stdio.h>
 #include "superlu_ddefs.h"
 
 #undef EXPAND_SYM
@@ -27,7 +27,7 @@ void
 dreadMM(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 	    double **nzval, int_t **rowind, int_t **colptr)
 {
-    int_t    j, k, jsize, nnz, nz, new_nonz;
+    int_t    i, j, k, jsize, lasta, nnz, nz, new_nonz;
     double *a, *val;
     int_t    *asub, *xa, *row, *col;
     int_t    zero_base = 0;
@@ -112,7 +112,7 @@ dreadMM(FILE *fp, int_t *m, int_t *n, int_t *nonz,
       new_nonz = *nonz;
 
     *m = *n;
-    printf("m %ld, n %ld, nonz %ld\n", (long long) *m, (long long) *n, (long long) *nonz);
+    printf("m %ld, n %ld, nonz %ld\n", *m, *n, *nonz);
     dallocateA_dist(*n, new_nonz, nzval, rowind, colptr); /* Allocate storage */
     a    = *nzval;
     asub = *rowind;
@@ -203,7 +203,6 @@ dreadMM(FILE *fp, int_t *m, int_t *n, int_t *nonz,
     SUPERLU_FREE(col);
 
 #ifdef CHK_INPUT
-    int i;
     for (i = 0; i < *n; i++) {
 	printf("Col %d, xa %d\n", i, xa[i]);
 	for (k = xa[i]; k < xa[i+1]; k++)
@@ -217,7 +216,7 @@ dreadMM(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 void dreadrhs(int m, double *b)
 {
     FILE *fp, *fopen();
-    int i;
+    int i, j;
 
     if ( !(fp = fopen("b.dat", "r")) ) {
         fprintf(stderr, "dreadrhs: file does not exist\n");

@@ -79,7 +79,7 @@ dlaqgs_dist(SuperMatrix *A, double *r, double *c,
     double   *Aval;
     int_t i, j, irow;
     double large, small, cj;
-    /*extern double dlamch_(char *);*/
+    extern double dlamch_(char *);
 
 
     /* Quick return if possible */

@@ -14,7 +14,6 @@
 /* limits.h:  the largest positive integer (INT_MAX) */
 #include <limits.h>
 #include <math.h>
-#include "parmetis.h"
 #include "superlu_ddefs.h"
 
 /*
@@ -102,7 +101,7 @@ get_perm_c_parmetis (SuperMatrix *A, int_t *perm_r, int_t *perm_c,
 #else /* 64-bit integers */
   int_t options[4]={0,0,0,1}, numflag;
 #endif
-  int_t m_loc, fst_row;
+  int_t m_loc, nnz_loc, fst_row;
   int_t m, n, bnz, i, j;
   int_t *rowptr, *colind, *l_fstVtxSep, *l_sizes;
   int_t *b_rowptr, *b_colind;
@@ -128,6 +127,7 @@ get_perm_c_parmetis (SuperMatrix *A, int_t *perm_r, int_t *perm_c,
 #endif
 
   Astore = (NRformat_loc *) A->Store;
+  nnz_loc = Astore->nnz_loc; /* number of nonzeros in the local submatrix */
   m_loc = Astore->m_loc;     /* number of rows local to this processor */
   fst_row = Astore->fst_row; /* global index of the first row */
   rowptr = Astore->rowptr;   /* pointer to rows and column indices */
@@ -414,13 +414,13 @@ a_plus_at_CompRow_loc
   int_t i, j, k, col, num_nz, nprocs;
   int_t *tcolind_recv; /* temporary receive buffer */
   int_t *tcolind_send; /* temporary send buffer */
-  int_t sz_tcolind_send, sz_tcolind_recv;
-  int_t ind, ind_rcv;
+  int_t sz_tcolind_send, sz_tcolind_loc, sz_tcolind_recv;
+  int_t ind, ind_tmp, ind_rcv;
   int redist_pra; /* TRUE if Pr != I or nprocs_i != nprocs_o */
   int_t *marker, *iperm_r;
   int_t *sendCnts, *recvCnts;
   int_t *sdispls, *rdispls;
-  int_t *b_rowptr, *b_colind, bnz_t, *b_rowptr_t, *b_colind_t;
+  int_t bnz, *b_rowptr, *b_colind, bnz_t, *b_rowptr_t, *b_colind_t;
   int_t p, t_ind, nelts, ipcol;
   int_t m_loc, m_loc_o;      /* number of local rows */ 
   int_t fst_row, fst_row_o;  /* index of first local row */
@@ -489,6 +489,7 @@ a_plus_at_CompRow_loc
   MPI_Alltoall (sendCnts, 1, mpi_int_t,
 		recvCnts, 1, mpi_int_t, grid->comm);
   sendCnts[iam] = 0;
+  sz_tcolind_loc = recvCnts[iam];
   
   for (i = 0, j = 0, p = 0; p < nprocs_i; p++) {
     rdispls[p] = j;

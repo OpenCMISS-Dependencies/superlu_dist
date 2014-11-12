@@ -22,21 +22,12 @@ PLAT		= _xt5
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB	        =
-
-############################################################################
-## parmetis 4.x.x, 32-bit integer
-PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
-## parmetis 4.x.x, 64-bit integer
-# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
-
-METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
-I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
-############################################################################
+METISLIB    	= -L/usr/common/acts/PARMETIS/3.1.1/cray-xt_O -lmetis
+PARMETISLIB   	= -L/usr/common/acts/PARMETIS/3.1.1/cray-xt_O -lparmetis
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS	 	= -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl
@@ -44,8 +35,6 @@ FLIBS	 	= -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl
 # Define all the libraries
 LIBS	     	= $(DSUPERLULIB) $(BLASLIB) $(PARMETISLIB) $(METISLIB) $(FLIBS)
 
-# Include directories for header files
-INCS	= ${I_PARMETIS}
 #
 #  The archiver and the flag(s) to use when building archive (library)
 #  If your system has no ranlib, set RANLIB = echo.
@@ -56,10 +45,9 @@ RANLIB       	= ranlib
 
 ############################################################################
 # C compiler setup
-CC      = cc
-INCS	= $(I_PARMETIS)
+CC           	= cc
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = ${INCS} -c99 -fastsse -DDEBUGlevel=0 -DPRNTlevel=1 #-D_LONGINT
+CFLAGS          = -c99 -fastsse -DDEBUGlevel=0 -DPRNTlevel=1 #-D_LONGINT
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 NOOPTS		= -O0

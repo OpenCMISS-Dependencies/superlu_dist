@@ -50,46 +50,22 @@
 </pre>
 */
 
-
-#include <stdlib.h>
-#include <stdio.h>
-
-
 int_t
 sp_ienv_dist(int_t ispec)
 {
-    // printf(" this function called\n");
-    int i;
 
-    char* ttemp;
+    int i;
 
     switch (ispec) {
 #if ( MACH==CRAY_T3E )
 	case 2: return (6);
 	case 3: return (30);
-
 #elif ( MACH==IBM )
-	case 2: return (20);
-	case 3: return (100);
+	case 2: return (10);
+	case 3: return (60);
 #else
-	case 2: 
-            ttemp = getenv("NREL");
-            if(ttemp)
-            {
-                return(atoi(ttemp));
-            }
-            else
-            return 20;
-            
-	case 3: 
-            ttemp = getenv("NSUP");
-            if(ttemp)
-            {
-                return(atoi(ttemp));
-            }
-            else
-            return 128;
-
+	case 2: return (12);
+	case 3: return (60);
 #endif
         case 6: return (5);
     }
@@ -98,7 +74,6 @@ sp_ienv_dist(int_t ispec)
     i = 1;
     xerbla_("sp_ienv", &i);
     return 0;
-
 
 } /* sp_ienv_dist */
 

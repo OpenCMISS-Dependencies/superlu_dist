@@ -22,23 +22,14 @@ PLAT		= _sp
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.0.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB      	= -lessl
 #MPILIB		= -L/usr/lpp/ppe.poe/lib -lmpi
 #PERFLIB     	= -L/vol1/VAMPIR/lib -lVT
-
-############################################################################
-## parmetis 4.x.x, 32-bit integer
-PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
-## parmetis 4.x.x, 64-bit integer
-# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
-
-METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
-I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
-############################################################################
+METISLIB        = -L/usr/common/usg/parmetis/3.1 -lmetis
+PARMETISLIB	= -L/usr/common/usg/parmetis/3.1 -lparmetis
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS	 	=
@@ -58,7 +49,7 @@ RANLIB       	= ranlib
 CC           	= mpcc
 # CFLAGS should be set to be the C flags that include optimization
 CFLAGS          = -D_SP -O3 -qarch=PWR3 -qalias=allptrs \
-		  -DDEBUGlevel=0 -DPRNTlevel=0 $(I_PARMETIS)
+		  -DDEBUGlevel=0 -DPRNTlevel=0
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 # This must be enforced to compile the two routines: slamch.c and dlamch.c.

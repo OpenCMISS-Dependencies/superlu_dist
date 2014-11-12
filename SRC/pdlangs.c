@@ -58,7 +58,7 @@ double pdlangs(char *norm, SuperMatrix *A, gridinfo_t *grid)
     NRformat_loc *Astore;
     int_t    m_loc;
     double   *Aval;
-    int_t    i, j, jcol;
+    int_t    i, j, irow, jcol;
     double   value=0., sum;
     double   *rwork;
     double   tempvalue;

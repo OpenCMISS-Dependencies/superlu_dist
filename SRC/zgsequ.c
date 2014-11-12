@@ -81,7 +81,7 @@ zgsequ_dist(SuperMatrix *A, double *r, double *c, double *rowcnd,
     int i, j, irow;
     double rcmin, rcmax;
     double bignum, smlnum;
-    /*extern double dlamch_(char *);*/
+    extern double dlamch_(char *);
     
     /* Test the input parameters. */
     *info = 0;

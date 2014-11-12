@@ -8,7 +8,6 @@
        September 30, 1994   
 </pre> 
 */
-#include <stdio.h>
 #include "Cnames.h"
 
 /* Subroutine */ 

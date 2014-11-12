@@ -81,8 +81,8 @@ pzlaqgs(SuperMatrix *A, double *r, double *c,
     NRformat_loc *Astore;
     doublecomplex *Aval;
     int_t i, j, irow, jcol, m_loc;
-    double large, small;
-    /*extern double dlamch_(char *);*/
+    double large, small, cj;
+    extern double dlamch_(char *);
     double temp;
 
     /* Quick return if possible */

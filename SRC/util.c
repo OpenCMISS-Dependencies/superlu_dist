@@ -12,23 +12,6 @@
 #include <math.h>
 #include "superlu_ddefs.h"
 
-#ifdef GPU_ACC
-
-#include "cublas_utils.h"
-
-inline
-cudaError_t checkCuda(cudaError_t result)
-{
-#if defined(DEBUG) || defined(_DEBUG)
-  if (result != cudaSuccess) {
-    fprintf(stderr, "CUDA Runtime Error: %s\n", cudaGetErrorString(result));
-    assert(result == cudaSuccess);
-  }
-#endif
-  return result;
-}
-
-#endif 
 
 /*! \brief Deallocate the structure pointing to the actual storage of the matrix. */
 void
@@ -116,11 +99,7 @@ Destroy_LU(int_t n, gridinfo_t *grid, LUstruct_t *LUstruct)
     for (i = 0; i < nb; ++i) 
 	if ( Llu->Lrowind_bc_ptr[i] ) {
 	    SUPERLU_FREE (Llu->Lrowind_bc_ptr[i]);
-#ifdef GPU_ACC
-	    checkCuda(cudaFreeHost(Llu->Lnzval_bc_ptr[i]));
-#else
 	    SUPERLU_FREE (Llu->Lnzval_bc_ptr[i]);
-#endif
 	}
     SUPERLU_FREE (Llu->Lrowind_bc_ptr);
     SUPERLU_FREE (Llu->Lnzval_bc_ptr);
@@ -189,7 +168,7 @@ void ScalePermstructFree(ScalePermstruct_t *ScalePermstruct)
 }
 
 /*! \brief Allocate storage in LUstruct */
-void LUstructInit(const int_t n, LUstruct_t *LUstruct)
+void LUstructInit(const int_t m, const int_t n, LUstruct_t *LUstruct)
 {
     if ( !(LUstruct->etree = intMalloc_dist(n)) )
 	ABORT("Malloc fails for etree[].");
@@ -227,13 +206,11 @@ void LUstructFree(LUstruct_t *LUstruct)
  * </pre>
  */
 void
-countnz_dist(const int_t n, int_t *xprune,
-	     long long int *nnzL, long long int *nnzU, 
+countnz_dist(const int_t n, int_t *xprune, int_t *nnzL, int_t *nnzU, 
 	     Glu_persist_t *Glu_persist, Glu_freeable_t *Glu_freeable)
 {
     int_t  fnz, fsupc, i, j, nsuper;
-    int_t  jlen, irep;
-    long long int nnzL0;
+    int_t  nnzL0, jlen, irep;
     int_t  *supno, *xsup, *xlsub, *xusub, *usub;
 
     supno  = Glu_persist->supno;
@@ -264,7 +241,7 @@ countnz_dist(const int_t n, int_t *xprune,
 	nnzL0 += xprune[irep] - xlsub[irep];
     }
     
-    /* printf("\tNo of nonzeros in symm-reduced L = %ld\n", nnzL0);*/
+    /* printf("\tNo of nonzeros in symm-reduced L = %d\n", nnzL0);*/
     
     /* For each column in U. */
     for (j = 0; j < n; ++j) {
@@ -286,12 +263,11 @@ countnz_dist(const int_t n, int_t *xprune,
  * subscripts.
  * </pre>
  */
-long long int
+int_t
 fixupL_dist(const int_t n, const int_t *perm_r, 
 	    Glu_persist_t *Glu_persist, Glu_freeable_t *Glu_freeable)
 {
-    register int_t nsuper, fsupc, nextl, i, j, k, jstrt;
-    register long long int lsub_size;
+    register int_t nsuper, fsupc, nextl, i, j, k, jstrt, lsub_size;
     int_t          *xsup, *lsub, *xlsub;
 
     if ( n <= 1 ) return 0;
@@ -347,37 +323,19 @@ void set_default_options_dist(superlu_options_t *options)
  */
 void print_options_dist(superlu_options_t *options)
 {
-    if ( options->PrintStat == NO ) return;
-
-    printf("**************************************************\n");
     printf(".. options:\n");
-    printf("**    Fact             : %4d\n", options->Fact);
-    printf("**    Equil            : %4d\n", options->Equil);
-    printf("**    ColPerm          : %4d\n", options->ColPerm);
-    printf("**    RowPerm          : %4d\n", options->RowPerm);
-    printf("**    ReplaceTinyPivot : %4d\n", options->ReplaceTinyPivot);
-    printf("**    Trans            : %4d\n", options->Trans);
-    printf("**    IterRefine       : %4d\n", options->IterRefine);
-    printf("**    num_lookaheads   : %4d\n", options->num_lookaheads);
-    printf("**    SymPattern       : %4d\n", options->SymPattern);
-    printf("**    lookahead_etree  : %4d\n", options->lookahead_etree);
-    printf("**************************************************\n");
+    printf("** \tFact\t %8d\n", options->Fact);
+    printf("** \tEquil\t %8d\n", options->Equil);
+    printf("** \tColPerm\t %8d\n", options->ColPerm);
+    printf("** \tRowPerm\t %8d\n", options->RowPerm);
+    printf("** \tReplaceTinyPivot %4d\n", options->ReplaceTinyPivot);
+    printf("** \tTrans\t %8d\n", options->Trans);
+    printf("** \tIterRefine\t %4d\n", options->IterRefine);
+    printf("** \tnum_lookaheads\t %4d\n", options->num_lookaheads);
+    printf("** \tSymPattern\t %4d\n", options->SymPattern);
+    printf("** \tlookahead_etree\t %4d\n", options->lookahead_etree);
+    printf("..\n");
 }
-
-/*! \brief Print the blocking parameters.
- */
-void print_sp_ienv_dist(superlu_options_t *options)
-{
-    if ( options->PrintStat == NO ) return;
-
-    printf("**************************************************\n");
-    printf(".. blocking parameters from sp_ienv():\n");
-    printf("**    relaxation           : %8d\n", sp_ienv_dist(2));
-    printf("**    max supernode        : %8d\n", sp_ienv_dist(3));
-    printf("**    estimated fill ratio : %8d\n", sp_ienv_dist(6));
-    printf("**************************************************\n");
-}
-
 
 /*! \brief
  *
@@ -422,7 +380,7 @@ pxgstrs_init(int_t n, int_t m_loc, int_t nrhs, int_t fst_row,
     int *itemp, *ptr_to_ibuf, *ptr_to_dbuf;
     int_t *row_to_proc;
     int_t i, gbi, k, l, num_diag_procs, *diag_procs;
-    int_t irow, q, knsupc, nsupers, *xsup, *supno;
+    int_t irow, lk, q, knsupc, nsupers, *xsup, *supno;
     int   iam, p, pkk, procs;
     pxgstrs_comm_t *gstrs_comm;
 
@@ -499,6 +457,7 @@ pxgstrs_init(int_t n, int_t m_loc, int_t nrhs, int_t fst_row,
 	if ( iam == pkk ) {
 	    for (k = p; k < nsupers; k += num_diag_procs) {
 		knsupc = SuperSize( k );
+		lk = LBi( k, grid ); /* Local block number */
 		irow = FstBlockC( k );
 		for (i = 0; i < knsupc; ++i) {
 #if 0
@@ -535,7 +494,6 @@ pxgstrs_init(int_t n, int_t m_loc, int_t nrhs, int_t fst_row,
     gstrs_comm->ptr_to_ibuf = ptr_to_ibuf;
     gstrs_comm->ptr_to_dbuf = ptr_to_ibuf + procs;
 
-    return 0;
 } /* PXGSTRS_INIT */
 
 
@@ -591,9 +549,6 @@ PStatPrint(superlu_options_t *options, SuperLUStat_t *stat, gridinfo_t *grid)
     if ( options->PrintStat == NO ) return;
 
     if ( !iam && options->Fact != FACTORED ) {
-	printf("**************************************************\n");
-	printf("**** Time (seconds) ****\n");
-
         if ( options->Equil != NO )
 	    printf("\tEQUIL time         %8.2f\n", utime[EQUIL]);
 	if ( options->RowPerm != NOROWPERM )
@@ -625,11 +580,11 @@ PStatPrint(superlu_options_t *options, SuperLUStat_t *stat, gridinfo_t *grid)
 	    printf("\tSolve flops\t%e\tMflops \t%8.2f\n",
 		   flopcnt,
 		   flopcnt*1e-6/utime[SOLVE]);
-	if ( options->IterRefine != NOREFINE ) {
-	    printf("\tREFINEMENT time    %8.2f\tSteps%8d\n\n",
-		   utime[REFINE], stat->RefineSteps);
-	}
-	printf("**************************************************\n");
+    }
+    
+    if ( !iam && options->IterRefine != NOREFINE ) {
+	printf("\tREFINEMENT time    %8.2f\tSteps%8d\n\n",
+	       utime[REFINE], stat->RefineSteps);
     }
 
 #if ( PROFlevel>=1 )
@@ -812,20 +767,6 @@ int file_PrintInt10(FILE *fp, char *name, int_t len, int_t *x)
 	fprintf(fp, "%6d", x[i]);
     }
     fprintf(fp, "\n");
-    return 0;
-}
-
-int file_PrintLong10(FILE *fp, char *name, int_t len, int_t *x)
-{
-    register int_t i;
-    
-    fprintf(fp, "%10s:", name);
-    for (i = 0; i < len; ++i) {
-	if ( i % 10 == 0 ) fprintf(fp, "\n\t[%2d-%2d]", i, i+9);
-	fprintf(fp, "%ld", (long long) x[i]);
-    }
-    fprintf(fp, "\n");
-    return 0;
 }
 
 int_t
@@ -940,15 +881,3 @@ void isort1(int_t N, int_t *ARRAY)
   }
 }
 
-void log_memory(long long cur_bytes, SuperLUStat_t *stat) {
-    stat->current_buffer += (float) cur_bytes;
-    if (cur_bytes > 0) {
-	stat->peak_buffer = 
-	    SUPERLU_MAX(stat->peak_buffer, stat->current_buffer);
-    }
-}
-
-void print_memorylog(SuperLUStat_t *stat, char *msg) {
-    printf("__ %s (MB):\n\tcurrent_buffer : %8.2f\tpeak_buffer : %8.2f\n",
-	   msg, stat->current_buffer, stat->peak_buffer);
-}

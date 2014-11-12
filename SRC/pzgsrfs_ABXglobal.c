@@ -147,7 +147,7 @@ pzgsrfs_ABXglobal(int_t n, SuperMatrix *A, double anorm, LUstruct_t *LUstruct,
     /*-- Function prototypes --*/
     extern void pzgstrs1(int_t, LUstruct_t *, gridinfo_t *,
 			 doublecomplex *, int, SuperLUStat_t *, int *);
-    /*extern double dlamch_(char *);*/
+    extern double dlamch_(char *);
     
     /* Test the input parameters. */
     *info = 0;

@@ -1,13 +1,11 @@
 
-
 /*! @file dreadrb.c
  * \brief Read a matrix stored in Rutherford-Boeing format
  *
  * <pre>
- * -- Distributed SuperLU routine (version 4.0) --
+ * -- Distributed SuperLU routine (version 2.3) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
- * August 15, 2014
- *
+ * July 15, 2009
  * </pre>
  *
  * Purpose
@@ -71,32 +69,31 @@
  * </pre>
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "superlu_ddefs.h"
 
+
 /*! \brief Eat up the rest of the current line */
-static int DumpLine(FILE *fp)
+static int dDumpLine(FILE *fp)
 {
     register int c;
     while ((c = fgetc(fp)) != '\n') ;
     return 0;
 }
 
-static int ParseIntFormat(char *buf, int_t *num, int_t *size)
+static int dParseIntFormat(char *buf, int *num, int *size)
 {
     char *tmp;
 
     tmp = buf;
     while (*tmp++ != '(') ;
-    *num = atoi(tmp);
+    sscanf(tmp, "%d", num);
     while (*tmp != 'I' && *tmp != 'i') ++tmp;
     ++tmp;
-    *size = atoi(tmp);
+    sscanf(tmp, "%d", size);
     return 0;
 }
 
-static int ParseFloatFormat(char *buf, int_t *num, int_t *size)
+static int dParseFloatFormat(char *buf, int *num, int *size)
 {
     char *tmp, *period;
 
@@ -123,9 +120,9 @@ static int ParseFloatFormat(char *buf, int_t *num, int_t *size)
     return 0;
 }
 
-static int ReadVector(FILE *fp, int_t n, int_t *where, int_t perline, int_t persize)
+static int ReadVector(FILE *fp, int n, int *where, int perline, int persize)
 {
-    register int_t i, j, item;
+    register int i, j, item;
     char tmp, buf[100];
 
     i = 0;
@@ -143,10 +140,10 @@ static int ReadVector(FILE *fp, int_t n, int_t *where, int_t perline, int_t pers
     return 0;
 }
 
-static int dReadValues(FILE *fp, int_t n, double *destination,
-        int_t perline, int_t persize)
+static int dReadValues(FILE *fp, int n, double *destination, int perline,
+        int persize)
 {
-    register int_t i, j, k, s;
+    register int i, j, k, s;
     char tmp, buf[100];
 
     i = 0;
@@ -165,7 +162,6 @@ static int dReadValues(FILE *fp, int_t n, double *destination,
 
     return 0;
 }
-
 
 
 /*! \brief
@@ -187,11 +183,11 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
     al_colptr = *colptr;
     al_val = *nzval;
 
-    if ( !(marker =(int *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
+    if ( !(marker =(int_t *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC fails for marker[]");
-    if ( !(t_colptr = (int *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
+    if ( !(t_colptr = (int_t *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC t_colptr[]");
-    if ( !(t_rowind = (int *) SUPERLU_MALLOC( *nonz * sizeof(int_t)) ) )
+    if ( !(t_rowind = (int_t *) SUPERLU_MALLOC( *nonz * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC fails for t_rowind[]");
     if ( !(t_val = (double*) SUPERLU_MALLOC( *nonz * sizeof(double)) ) )
 	ABORT("SUPERLU_MALLOC fails for t_val[]");
@@ -218,9 +214,9 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
 	}
 
     new_nnz = *nonz * 2 - n;
-    if ( !(a_colptr = (int *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
+    if ( !(a_colptr = (int_t *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC a_colptr[]");
-    if ( !(a_rowind = (int *) SUPERLU_MALLOC( new_nnz * sizeof(int_t)) ) )
+    if ( !(a_rowind = (int_t *) SUPERLU_MALLOC( new_nnz * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC fails for a_rowind[]");
     if ( !(a_val = (double*) SUPERLU_MALLOC( new_nnz * sizeof(double)) ) )
 	ABORT("SUPERLU_MALLOC fails for a_val[]");
@@ -253,7 +249,7 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
       a_colptr[j+1] = k;
     }
 
-    printf("FormFullA: new_nnz = %ld, k = %ld\n", (long long) new_nnz, (long long)k);
+    printf("FormFullA: new_nnz = %d, k = %d\n", new_nnz, k);
 
     SUPERLU_FREE(al_val);
     SUPERLU_FREE(al_rowind);
@@ -270,11 +266,12 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
 }
 
 void
-dreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
-        double **nzval, int_t **rowind, int_t **colptr)
+dreadrb(FILE *fp, int *nrow, int *ncol, int *nonz,
+        double **nzval, int **rowind, int **colptr)
 {
-    register int_t i, numer_lines = 0;
-    int_t tmp, colnum, colsize, rownum, rowsize, valnum, valsize;
+
+    register int i, numer_lines = 0;
+    int tmp, colnum, colsize, rownum, rowsize, valnum, valsize;
     char buf[100], type[4];
     int sym;
 
@@ -288,7 +285,7 @@ dreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
         sscanf(buf, "%d", &tmp);
         if (i == 3) numer_lines = tmp;
     }
-    DumpLine(fp);
+    dDumpLine(fp);
 
     /* Line 3 */
     fscanf(fp, "%3c", type);
@@ -307,19 +304,19 @@ dreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
         printf("This is not an assembled matrix!\n");
     if (*nrow != *ncol)
         printf("Matrix is not square.\n");
-    DumpLine(fp);
+    dDumpLine(fp);
 
     /* Allocate storage for the three arrays ( nzval, rowind, colptr ) */
     dallocateA_dist(*ncol, *nonz, nzval, rowind, colptr);
 
     /* Line 4: format statement */
     fscanf(fp, "%16c", buf);
-    ParseIntFormat(buf, &colnum, &colsize);
+    dParseIntFormat(buf, &colnum, &colsize);
     fscanf(fp, "%16c", buf);
-    ParseIntFormat(buf, &rownum, &rowsize);
+    dParseIntFormat(buf, &rownum, &rowsize);
     fscanf(fp, "%20c", buf);
-    ParseFloatFormat(buf, &valnum, &valsize);
-    DumpLine(fp);
+    dParseFloatFormat(buf, &valnum, &valsize);
+    dDumpLine(fp);
 
 #ifdef DEBUG
     printf("%d rows, %d nonzeros\n", *nrow, *nonz);

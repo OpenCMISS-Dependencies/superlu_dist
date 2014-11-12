@@ -76,7 +76,6 @@
 #define f_set_superlu_options            f_set_superlu_options_
 #define f_set_default_options            f_set_default_options_
 #define f_superlu_gridinit               f_superlu_gridinit_
-#define f_superlu_gridmap                f_superlu_gridmap_
 #define f_superlu_gridexit               f_superlu_gridexit_
 #define f_ScalePermstructInit            f_scalepermstructinit_
 #define f_ScalePermstructFree            f_scalepermstructfree_
@@ -174,8 +173,8 @@
 #define xerbla_         XERBLA
 #define lsame_          LSAME
 
-#define mc64id_dist     MC64ID_DIST
-#define mc64ad_dist     MC64AD_DIST
+#define mc64id_         MC64ID
+#define mc64ad_         MC64AD
 #define c_bridge_dgssv_               C_BRIDGE_DGSSV
 #define c_fortran_slugrid_            C_FORTRAN_SLUGRID
 #define c_fortran_pdgssvx_            C_FORTRAN_PDGSSVX
@@ -207,7 +206,6 @@
 #define f_set_superlu_options            F_SET_SUPERLU_OPTIONS
 #define f_set_default_options            F_SET_DEFAULT_OPTIONS
 #define f_superlu_gridinit               F_SUPERLU_GRIDINIT
-#define f_superlu_gridmap                F_SUPERLU_GRIDMAP
 #define f_superlu_gridexit               F_SUPERLU_GRIDEXIT
 #define f_ScalePermstructInit            F_SCALEPERMSTRUCTINIT
 #define f_ScalePermstructFree            F_SCALEPERMSTRUCTFREE
@@ -305,8 +303,8 @@
 #define xerbla_         xerbla
 #define lsame_          lsame
 
-#define mc64id_dist         mc64id_dist
-#define mc64ad_dist         mc64ad_dist
+#define mc64id_         mc64id
+#define mc64ad_         mc64ad
 
 #define c_bridge_dgssv_               c_bridge_dgssv
 #define c_fortran_slugrid_            c_fortran_slugrid
@@ -339,7 +337,6 @@
 #define f_set_superlu_options            f_set_superlu_options
 #define f_set_default_options            f_set_default_options
 #define f_superlu_gridinit               f_superlu_gridinit
-#define f_superlu_gridmap                f_superlu_gridmap
 #define f_superlu_gridexit               f_superlu_gridexit
 #define f_ScalePermstructInit            f_scalepermstructinit
 #define f_ScalePermstructFree            f_scalepermstructfree

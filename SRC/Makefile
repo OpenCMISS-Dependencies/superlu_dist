@@ -31,13 +31,8 @@ include ../make.inc
 #
 ALLAUX 	= sp_ienv.o etree.o sp_colorder.o get_perm_c.o \
 	  mmd.o comm.o memory.o util.o superlu_grid.o \
-	  pxerbla.o superlu_timer.o GetDiagU.o symbfact.o \
-	  psymbfact.o psymbfact_util.o get_perm_c_parmetis.o mc64ad_dist.o \
-	  static_schedule.o
-
-ifeq "${ACC}" "GPU"
-ALLAUX += cublas_utils.o
-endif
+	  pxerbla.o superlu_timer.o GetDiagU.o mc64ad.o symbfact.o \
+	  psymbfact.o psymbfact_util.o get_perm_c_parmetis.o
 
 #### LAPACK auxiliary routines
 LAAUX	= lsame.o xerbla.o slamch.o dlamch.o
@@ -48,25 +43,25 @@ LAAUX	= lsame.o xerbla.o slamch.o dlamch.o
 DSLUSRC	= dlangs.o dgsequ.o dlaqgs.o dutil.o \
 	  dmemory.o dmyblas2.o dsp_blas2.o dsp_blas3.o
 ZSLUSRC	= dcomplex.o zlangs.o zgsequ.o zlaqgs.o zutil.o \
-	  zmemory.o zmyblas2.o zsp_blas2.o zsp_blas3.o
+	  zmemory.o zmyblas2.o dmemory.o zsp_blas2.o zsp_blas3.o
 
 #
 # Routines for double precision parallel SuperLU
-DPLUSRC = pdgssvx.o pdgssvx_ABglobal.o dreadhb.o dreadrb.o dreadtriple.o dreadMM.o \
-	  pdgsequ.o pdlaqgs.o dldperm_dist.o pdlangs.o pdutil.o \
-	  pdsymbfact_distdata.o ddistribute.o pddistribute.o \
-	  pdgstrf.o pdgstrf2.o \
-	  pdgstrs.o pdgstrs1.o pdgstrs_lsum.o pdgstrs_Bglobal.o \
-	  pdgsrfs.o pdgsmv.o pdgsrfs_ABXglobal.o pdgsmv_AXglobal.o 
+# DPLUSRC = dldperm.o ddistribute.o pdgstrf.o pdgstrs_Bglobal.o 
+DPLUSRC = dldperm.o ddistribute.o pdgstrf.o pdgstrs_Bglobal.o \
+	  pdgstrs1.o pdgssvx_ABglobal.o pdgsrfs_ABXglobal.o pdgsmv_AXglobal.o\
+	  pdgssvx.o pdgstrs.o pddistribute.o pdlangs.o pdutil.o \
+	  pdgsequ.o pdlaqgs.o pdgsrfs.o pdgsmv.o pdgstrs_lsum.o \
+	  pdsymbfact_distdata.o dreadhb.o dreadrb.o dreadtriple.o dreadMM.o
 
 #
 # Routines for double complex parallel SuperLU
-ZPLUSRC = pzgssvx.o pzgssvx_ABglobal.o zreadhb.o zreadrb.o zreadtriple.o zreadMM.o \
-	  pzgsequ.o pzlaqgs.o zldperm_dist.o pzlangs.o pzutil.o \
-	  pzsymbfact_distdata.o zdistribute.o pzdistribute.o \
-	  pzgstrf.o pzgstrf2.o \
-	  pzgstrs.o pzgstrs1.o pzgstrs_lsum.o pzgstrs_Bglobal.o \
-	  pzgsrfs.o pzgsmv.o pzgsrfs_ABXglobal.o pzgsmv_AXglobal.o 
+# ZPLUSRC = zldperm.o zdistribute.o pzgssvx_ABglobal.o pzgstrf_irecv.o
+ZPLUSRC = zldperm.o zdistribute.o pzgssvx_ABglobal.o pzgstrf.o \
+	  pzgstrs1.o pzgstrs_Bglobal.o pzgsrfs_ABXglobal.o pzgsmv_AXglobal.o \
+	  pzgssvx.o pzgstrs.o pzdistribute.o pzlangs.o pzutil.o \
+	  pzgsequ.o pzlaqgs.o pzgsrfs.o pzgsmv.o pzgstrs_lsum.o \
+	  pzsymbfact_distdata.o zreadhb.o zreadtriple.o zreadMM.o
 
 all:  double complex16
 

@@ -84,7 +84,7 @@ int_t symbfact
     int_t *iwork, *perm_r, *segrep, *repfnz;
     int_t *xprune, *marker, *parent, *xplore;
     int_t relax, *desc, *relax_end;
-    long long int nnzL, nnzU, nnzLU, nnzLSUB;
+    int_t nnzL, nnzU;
 
 #if ( DEBUGlevel>=1 )
     CHECK_MALLOC(pnum, "Enter symbfact()");
@@ -169,14 +169,13 @@ int_t symbfact
     countnz_dist(min_mn, xprune, &nnzL, &nnzU, Glu_persist, Glu_freeable);
 
     /* Apply perm_r to L; Compress LSUB array. */
-    nnzLSUB = fixupL_dist(min_mn, perm_r, Glu_persist, Glu_freeable);
+    i = fixupL_dist(min_mn, perm_r, Glu_persist, Glu_freeable);
 
     if ( !pnum && (options->PrintStat == YES)) {
-	nnzLU = nnzL + nnzU - min_mn;
 	printf("\tNonzeros in L       %ld\n", nnzL);
 	printf("\tNonzeros in U       %ld\n", nnzU);
-	printf("\tnonzeros in L+U     %ld\n", nnzLU);
-	printf("\tnonzeros in LSUB    %ld\n", nnzLSUB);
+	printf("\tnonzeros in L+U     %ld\n", nnzL + nnzU - min_mn);
+	printf("\tnonzeros in LSUB    %ld\n", i);
     }
     SUPERLU_FREE(iwork);
 
@@ -316,7 +315,7 @@ static int_t snode_dfs
 		lsub[nextl++] = krow;
 		if ( nextl >= nzlmax ) {
 		    if (mem_error = symbfact_SubXpand(A->ncol, jcol, nextl,
-						      (MemType) LSUB, &nzlmax,
+						      LSUB, &nzlmax,
 						      Glu_freeable))
 			return (mem_error);
 		    lsub = Glu_freeable->lsub;

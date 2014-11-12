@@ -82,8 +82,8 @@ pdlaqgs(SuperMatrix *A, double *r, double *c,
     NRformat_loc *Astore;
     double *Aval;
     int_t i, j, irow, jcol, m_loc;
-    double large, small;
-    /*extern double dlamch_(char *);*/
+    double large, small, cj;
+    extern double dlamch_(char *);
 
     /* Quick return if possible */
     if (A->nrow <= 0 || A->ncol <= 0) {

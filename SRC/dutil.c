@@ -139,18 +139,15 @@ void dPrint_CompCol_Matrix_dist(SuperMatrix *A)
     printf("\nCompCol matrix: ");
     printf("Stype %d, Dtype %d, Mtype %d\n", A->Stype,A->Dtype,A->Mtype);
     Astore = (NCformat *) A->Store;
-    printf("nrow %ld, ncol %ld, nnz %ld\n", (long long) A->nrow,
-	    (long long) A->ncol, (long long) Astore->nnz);
+    printf("nrow %d, ncol %d, nnz %d\n", A->nrow,A->ncol,Astore->nnz);
     if ( (dp = (double *) Astore->nzval) != NULL ) {
         printf("nzval:\n");
         for (i = 0; i < Astore->nnz; ++i) printf("%f  ", dp[i]);
     }
     printf("\nrowind:\n");
-    for (i = 0; i < Astore->nnz; ++i) 
-        printf("%ld  ", (long long) Astore->rowind[i]);
+    for (i = 0; i < Astore->nnz; ++i) printf("%d  ", Astore->rowind[i]);
     printf("\ncolptr:\n");
-    for (i = 0; i <= A->ncol; ++i) 
-        printf("%ld  ", (long long) Astore->colptr[i]);
+    for (i = 0; i <= A->ncol; ++i) printf("%d  ", Astore->colptr[i]);
     printf("\nend CompCol matrix.\n");
 }
 
@@ -164,8 +161,7 @@ void dPrint_Dense_Matrix_dist(SuperMatrix *A)
     printf("Stype %d, Dtype %d, Mtype %d\n", A->Stype,A->Dtype,A->Mtype);
     Astore = (DNformat *) A->Store;
     dp = (double *) Astore->nzval;
-    printf("nrow %ld, ncol %ld, lda %ld\n", 
-        (long int) A->nrow, (long int) A->ncol, (long int) Astore->lda);
+    printf("nrow %d, ncol %d, lda %d\n", A->nrow,A->ncol,Astore->lda);
     printf("\nnzval: ");
     for (i = 0; i < A->nrow; ++i) printf("%f  ", dp[i]);
     printf("\nend Dense matrix.\n");
@@ -173,45 +169,42 @@ void dPrint_Dense_Matrix_dist(SuperMatrix *A)
 
 int dPrint_CompRowLoc_Matrix_dist(SuperMatrix *A)
 {
-    NRformat_loc  *Astore;
-    int_t  nnz_loc, m_loc;
-    double  *dp;
+    NRformat_loc     *Astore;
+    int_t i, nnz_loc, m_loc;
+    double       *dp;
     
     printf("\n==== CompRowLoc matrix: ");
     printf("Stype %d, Dtype %d, Mtype %d\n", A->Stype,A->Dtype,A->Mtype);
     Astore = (NRformat_loc *) A->Store;
-    printf("nrow %ld, ncol %ld\n", 
-            (long int) A->nrow, (long int) A->ncol);
+    printf("nrow %d, ncol %d\n", A->nrow,A->ncol);
     nnz_loc = Astore->nnz_loc; m_loc = Astore->m_loc;
-    printf("nnz_loc %ld, m_loc %ld, fst_row %ld\n", (long int) nnz_loc, 
-            (long int) m_loc, (long int) Astore->fst_row);
+    printf("nnz_loc %d, m_loc %d, fst_row %d\n", nnz_loc, m_loc,
+	   Astore->fst_row);
     PrintInt10("rowptr", m_loc+1, Astore->rowptr);
     PrintInt10("colind", nnz_loc, Astore->colind);
     if ( (dp = (double *) Astore->nzval) != NULL )
         PrintDouble5("nzval", nnz_loc, dp);
     printf("==== end CompRowLoc matrix\n");
-    return 0;
 }
 
 int file_dPrint_CompRowLoc_Matrix_dist(FILE *fp, SuperMatrix *A)
 {
     NRformat_loc     *Astore;
-    int_t  nnz_loc, m_loc;
+    int_t i, nnz_loc, m_loc;
     double       *dp;
     
     fprintf(fp, "\n==== CompRowLoc matrix: ");
     fprintf(fp, "Stype %d, Dtype %d, Mtype %d\n", A->Stype,A->Dtype,A->Mtype);
     Astore = (NRformat_loc *) A->Store;
-    fprintf(fp, "nrow %ld, ncol %ld\n", (long int) A->nrow, (long int) A->ncol);
+    fprintf(fp, "nrow %d, ncol %d\n", A->nrow, A->ncol);
     nnz_loc = Astore->nnz_loc; m_loc = Astore->m_loc;
-    fprintf(fp, "nnz_loc %ld, m_loc %ld, fst_row %ld\n", (long int) nnz_loc,
-            (long int) m_loc, (long int) Astore->fst_row);
-    file_PrintLong10(fp, "rowptr", m_loc+1, Astore->rowptr);
-    file_PrintLong10(fp, "colind", nnz_loc, Astore->colind);
+    fprintf(fp, "nnz_loc %d, m_loc %d, fst_row %d\n", nnz_loc, m_loc,
+	    Astore->fst_row);
+    file_PrintInt10(fp, "rowptr", m_loc+1, Astore->rowptr);
+    file_PrintInt10(fp, "colind", nnz_loc, Astore->colind);
     if ( (dp = (double *) Astore->nzval) != NULL )
         file_PrintDouble5(fp, "nzval", nnz_loc, dp);
     fprintf(fp, "==== end CompRowLoc matrix\n");
-    return 0;
 }
 
 void
@@ -301,7 +294,8 @@ dFillRHS_dist(char *trans, int_t nrhs, double *x, int_t ldx,
     double one = 1.0;
     double zero = 0.0;
 
-    sp_dgemm_dist(trans, nrhs, one, A, x, ldx, zero, rhs, ldb);
+    sp_dgemm_dist(trans, "N", A->nrow, nrhs, A->ncol, one, A,
+		  x, ldx, zero, rhs, ldb);
 
 }
 
@@ -345,7 +339,7 @@ void PrintDouble5(char *name, int_t len, double *x)
     
     printf("%10s:", name);
     for (i = 0; i < len; ++i) {
-	if ( i % 5 == 0 ) printf("\n[%ld-%ld] ", (long int) i, (long int) i+4);
+	if ( i % 5 == 0 ) printf("\n[%2d-%2d] ", i, i+4);
 	printf("%14e", x[i]);
     }
     printf("\n");
@@ -357,25 +351,24 @@ int file_PrintDouble5(FILE *fp, char *name, int_t len, double *x)
     
     fprintf(fp, "%10s:", name);
     for (i = 0; i < len; ++i) {
-	if ( i % 5 == 0 ) fprintf(fp, "\n[%ld-%ld] ", (long int) i, (long int) i+4);
+	if ( i % 5 == 0 ) fprintf(fp, "\n[%2d-%2d] ", i, i+4);
 	fprintf(fp, "%14e", x[i]);
     }
     fprintf(fp, "\n");
-    return 0;
 }
 
 /*! \brief Print the blocks in the factored matrix L.
  */
-void dPrintLblocks(int iam, int_t nsupers, gridinfo_t *grid,
+void dPrintLblocks(int_t iam, int_t nsupers, gridinfo_t *grid,
 		  Glu_persist_t *Glu_persist, LocalLU_t *Llu)
 {
-    register int c, extra, gb, j, lb, nsupc, nsupr, len, nb, ncb;
+    register int_t c, extra, gb, j, lb, nsupc, nsupr, len, nb, ncb;
     register int_t k, mycol, r;
     int_t *xsup = Glu_persist->xsup;
     int_t *index;
     double *nzval;
 
-    printf("\n[%d] L BLOCKS IN COLUMN-MAJOR ORDER -->\n", iam);
+    printf("\n(%d) L BLOCKS IN COLUMN-MAJOR ORDER -->\n", iam);
     ncb = nsupers / grid->npcol;
     extra = nsupers % grid->npcol;
     mycol = MYCOL( iam, grid );
@@ -388,11 +381,11 @@ void dPrintLblocks(int iam, int_t nsupers, gridinfo_t *grid,
 	    nsupr = index[1];
 	    gb = lb * grid->npcol + mycol;
 	    nsupc = SuperSize( gb );
-	    printf("[%d] block column %d (local # %d), nsupc %d, # row blocks %d\n",
-		   iam, gb, lb, nsupc, nb);
+	    printf("(%d) block column %d (local), # row blocks %d\n",
+		   iam, lb, nb);
 	    for (c = 0, k = BC_HEADER, r = 0; c < nb; ++c) {
 		len = index[k+1];
-		printf("[%d] row-block %d: block # %d\tlength %d\n", 
+		printf("(%d) row-block %d: block # %d\tlength %d\n", 
 		       iam, c, index[k], len);
 		PrintInt10("lsub", len, &index[k+LB_DESCRIPTOR]);
 		for (j = 0; j < nsupc; ++j) {
@@ -415,16 +408,16 @@ void dPrintLblocks(int iam, int_t nsupers, gridinfo_t *grid,
 
 /*! \brief Print the blocks in the factored matrix U.
  */
-void dPrintUblocks(int iam, int_t nsupers, gridinfo_t *grid, 
+void dPrintUblocks(int_t iam, int_t nsupers, gridinfo_t *grid, 
 		  Glu_persist_t *Glu_persist, LocalLU_t *Llu)
 {
-    register int c, extra, jb, k, lb, len, nb, nrb, nsupc;
+    register int_t c, extra, jb, k, lb, len, nb, nrb, nsupc;
     register int_t myrow, r;
     int_t *xsup = Glu_persist->xsup;
     int_t *index;
     double *nzval;
 
-    printf("\n[%d] U BLOCKS IN ROW-MAJOR ORDER -->\n", iam);
+    printf("\n(%d) U BLOCKS IN ROW-MAJOR ORDER -->\n", iam);
     nrb = nsupers / grid->nprow;
     extra = nsupers % grid->nprow;
     myrow = MYROW( iam, grid );
@@ -434,13 +427,13 @@ void dPrintUblocks(int iam, int_t nsupers, gridinfo_t *grid,
 	if ( index ) { /* Not an empty row */
 	    nzval = Llu->Unzval_br_ptr[lb];
 	    nb = index[0];
-	    printf("[%d] block row %d (local # %d), # column blocks %d\n",
-		   iam, lb*grid->nprow+myrow, lb, nb);
+	    printf("(%d) block row %d (local), # column blocks %d\n",
+		   iam, lb, nb);
 	    r  = 0;
 	    for (c = 0, k = BR_HEADER; c < nb; ++c) {
 		jb = index[k];
 		len = index[k+1];
-		printf("[%d] col-block %d: block # %d\tlength %d\n", 
+		printf("(%d) col-block %d: block # %d\tlength %d\n", 
 		       iam, c, jb, index[k+1]);
 		nsupc = SuperSize( jb );
 		PrintInt10("fstnz", nsupc, &index[k+UB_DESCRIPTOR]);
@@ -449,7 +442,7 @@ void dPrintUblocks(int iam, int_t nsupers, gridinfo_t *grid,
 		r += len;
 	    }
 
-	    printf("[%d] ToSendD[] %d\n", iam, Llu->ToSendD[lb]);
+	    printf("(%d) ToSendD[] %d\n", iam, Llu->ToSendD[lb]);
 	}
     }
 } /* DPRINTUBLOCKS */
@@ -461,14 +454,13 @@ dprint_gsmv_comm(FILE *fp, int_t m_loc, pdgsmv_comm_t *gsmv_comm,
   int_t procs = grid->nprow*grid->npcol;
   fprintf(fp, "TotalIndSend %d\tTotalValSend %d\n", gsmv_comm->TotalIndSend,
 	  gsmv_comm->TotalValSend);
-  file_PrintLong10(fp, "extern_start", m_loc, gsmv_comm->extern_start);
-  file_PrintLong10(fp, "ind_tosend", gsmv_comm->TotalIndSend, gsmv_comm->ind_tosend);
-  file_PrintLong10(fp, "ind_torecv", gsmv_comm->TotalValSend, gsmv_comm->ind_torecv);
-  file_PrintLong10(fp, "ptr_ind_tosend", procs+1, gsmv_comm->ptr_ind_tosend);
-  file_PrintLong10(fp, "ptr_ind_torecv", procs+1, gsmv_comm->ptr_ind_torecv);
+  file_PrintInt10(fp, "extern_start", m_loc, gsmv_comm->extern_start);
+  file_PrintInt10(fp, "ind_tosend", gsmv_comm->TotalIndSend, gsmv_comm->ind_tosend);
+  file_PrintInt10(fp, "ind_torecv", gsmv_comm->TotalValSend, gsmv_comm->ind_torecv);
+  file_PrintInt10(fp, "ptr_ind_tosend", procs+1, gsmv_comm->ptr_ind_tosend);
+  file_PrintInt10(fp, "ptr_ind_torecv", procs+1, gsmv_comm->ptr_ind_torecv);
   file_PrintInt10(fp, "SendCounts", procs, gsmv_comm->SendCounts);
   file_PrintInt10(fp, "RecvCounts", procs, gsmv_comm->RecvCounts);
-  return 0;
 }
 
 

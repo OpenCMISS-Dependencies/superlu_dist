@@ -235,8 +235,7 @@ float symbfact_dist
   int iinfo; /* return code */
   int_t m, n;
   int_t nextl, nextu, neltsZr, neltsTotal, nsuper_loc, szLGr, szUGr;
-  int_t ind_blk, nsuper, vtx, min_mn, szsn;
-  long long int nnzL, nnzU, nnzLU;
+  int_t ind_blk, nsuper, vtx, min_mn, nnzL, nnzU, szsn;
   float stat_loc[23], stat_glob[23], mem_glob[15];
   
   Llu_symbfact_t Llu_symbfact; /* local L and U and pruned L and U data structures */
@@ -503,10 +502,10 @@ float symbfact_dist
       szsn = 1;
       if (INT_MAX - nnzL <= Llu_symbfact.xlsub[fstVtx_lid + 1] - 
 	  Llu_symbfact.xlsub[fstVtx_lid])
-	printf ("PE[%d] ERR nnzL %ld\n", iam, nnzL); 
+	printf ("PE[%d] ERR nnzL %d\n", iam, nnzL); 
       if (INT_MAX - nnzU <= Llu_symbfact.xusub[fstVtx_lid + 1] - 
 	  Llu_symbfact.xusub[fstVtx_lid])
-	printf ("PE[%d] ERR nnzU %ld\n", iam, nnzU);
+	printf ("PE[%d] ERR nnzU %d\n", iam, nnzU);
       
       j = Llu_symbfact.xlsub[fstVtx_lid + 1] - Llu_symbfact.xlsub[fstVtx_lid];
       k = Llu_symbfact.xusub[fstVtx_lid + 1] - Llu_symbfact.xusub[fstVtx_lid];
@@ -618,24 +617,24 @@ float symbfact_dist
     if (stat_msgs_g[7] == 0) stat_msgs_g[7] = 1;
     
     if (!iam) {
-      nnzL   = (long long) stat_glob[0]; nnzU  = (long long) stat_glob[1];
+      nnzL   = (int_t) stat_glob[0]; nnzU  = (int_t) stat_glob[1];
       nsuper = (int_t) stat_glob[2];
       szLGr  = (int_t) stat_glob[3]; szUGr = (int_t) stat_glob[4];
-      printf("\tMax szBlk          %ld\n", (long long) VInfo.maxSzBlk);
+      printf("\tMax szBlk          %ld\n", VInfo.maxSzBlk);
 #if ( PRNTlevel>=2 )
       printf("\t relax_gen %.2f, relax_curSep %.2f, relax_seps %.2f\n",
 	     PS.relax_gen, PS.relax_curSep, PS.relax_seps);
 #endif
       printf("\tParameters: fill mem %ld fill pelt %ld\n",
-	     (long long) sp_ienv_dist(6), (long long) PS.fill_par);
+	     sp_ienv_dist(6), PS.fill_par);
       printf("\tNonzeros in L       %ld\n", nnzL);
       printf("\tNonzeros in U       %ld\n", nnzU);
-      nnzLU = nnzL + nnzU;
-      printf("\tnonzeros in L+U-I   %ld\n", nnzLU);
-      printf("\tNo of supers   %ld\n", (long long) nsuper);
-      printf("\tSize of G(L)   %ld\n", (long long) szLGr);
-      printf("\tSize of G(U)   %ld\n", (long long) szUGr);
-      printf("\tSize of G(L+U) %ld\n", (long long) szLGr+szUGr);
+      printf("\tnonzeros in L+U-I   %ld\n", 
+	     nnzL + nnzU);
+      printf("\tNo of supers   %ld\n", nsuper);
+      printf("\tSize of G(L)   %ld\n", szLGr);
+      printf("\tSize of G(U)   %ld\n", szUGr);
+      printf("\tSize of G(L+U) %ld\n", szLGr+szUGr);
 
       printf("\tParSYMBfact (MB)      :\tL\\U MAX %.2f\tAVG %.2f\n",
 	     mem_glob[0]*1e-6, 
@@ -2268,7 +2267,6 @@ updateRcvd_prGraph
   
   for (i = fstVtx_toUpd; i < nvtcs_toUpd; i++)
     marker[i] = 0;
-  return 0;
 }
 
 static int_t
@@ -4007,8 +4005,6 @@ dnsCurSep_symbfact
   if (newelts_U) SUPERLU_FREE (newelts_U);
   if (PS->szDnsSep < mem_dnsCS)
     PS->szDnsSep = mem_dnsCS;
-
-  return 0;
 }
 
 /*! \brief
@@ -4538,8 +4534,6 @@ interLvl_symbfact
   if (request_snd != NULL) SUPERLU_FREE (request_snd);
   if (request_rcv != NULL) SUPERLU_FREE (request_rcv);
   if (status != NULL) SUPERLU_FREE (status);
-
-  return 0;
 }
 
 static void

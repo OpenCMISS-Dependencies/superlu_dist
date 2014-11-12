@@ -16,43 +16,30 @@
 ############################################################################
 #
 #  The machine (platform) identifier to append to the library names
-# Carver: Intel compiler
-PLAT		= _sp
+#
+PLAT		= _xe6
 
 #
 #  The name of the libraries to be created/linked to
 #
-DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
+DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST_3.3
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
-BLASLIB	        = ${MKL}
+BLASLIB	        =
 #
-############################################################################
 ## parmetis 4.x.x, 32-bit integer
-PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
+METISLIB    	= -L${HOME}/Hopper/lib/parmetis-4.0.2/build/Linux-x86_64/libmetis -lmetis
+PARMETISLIB  	= -L${HOME}/Hopper/lib/parmetis-4.0.2/build/Linux-x86_64/libparmetis -lparmetis
 ## parmetis 4.x.x, 64-bit integer
-# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
-
-METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
-I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
-############################################################################
+# METISLIB    	= -L${HOME}/Hopper/lib/parmetis-4.0.2-64bit/build/Linux-x86_64/libmetis -lmetis
+# PARMETISLIB  	= -L${HOME}/Hopper/lib/parmetis-4.0.2-64bit/build/Linux-x86_64/libparmetis -lparmetis
 
 # Define the required Fortran libraries, if you use C compiler to link
-FLIBS	 	= 
+FLIBS	 	= -lpgf90 -lpgf90_rpm1
 
 # Define all the libraries
-LIBS   	= $(DSUPERLULIB) $(PARMETISLIB) $(METISLIB) $(BLASLIB) $(FLIBS)
-
-# Include directories for header files
-INCS	= ${I_PARMETIS}
-
-ifeq "${ACC}" "GPU"
-CUDA_FLAGS = -DGPU_ACC
-INCS += -I/usr/common/usg/cuda/5.5/include
-LIBS += -L/usr/common/usg/cuda/5.5/lib64 -lcublas -lcudart 
-endif
+LIBS	     	= $(DSUPERLULIB) $(BLASLIB) $(PARMETISLIB) $(METISLIB) $(FLIBS)
 
 #
 #  The archiver and the flag(s) to use when building archive (library)
@@ -62,28 +49,26 @@ ARCH         	= ar
 ARCHFLAGS    	= cr
 RANLIB       	= ranlib
 
-
 ############################################################################
 # C compiler setup
-CC           	= mpicc
+CC           	= cc
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = ${CUDA_FLAGS} ${INCS} -std=c99 -O3 -Wall -w2 -mkl -openmp \
+CFLAGS          = -fast -Mipa=fast,safe \
 		-DDEBUGlevel=0 -DPRNTlevel=1 -DPROFlevel=0 \
-#		-D_LONGINT 
-#	-Wunused-variable 
+#		-D_LONGINT
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 NOOPTS		= -O0
 ############################################################################
 # FORTRAN compiler setup
-FORTRAN         = mpif90
-F90FLAGS	= -fast -Mnomain
+FORTRAN         = ftn
+F90FLAGS	= -fast -Mipa=fast,safe
 ############################################################################
-LOADER	        = mpicc
-LOADOPTS	= -openmp #-Mnomain
+LOADER	        = $(CC)
+LOADOPTS	= -fast
 ############################################################################
 #  C preprocessor defs for compilation (-DNoChange, -DAdd_, or -DUpCase)
 #
 #  Need follow the convention of how C calls a Fortran routine.
 #
-CDEFS        = -DNoChange
+CDEFS        = -DAdd_

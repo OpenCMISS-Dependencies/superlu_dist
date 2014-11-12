@@ -109,7 +109,7 @@ dist_symbLU (int_t n, Pslu_freeable_t *Pslu_freeable,
   int_t *globToLoc, nvtcs_loc;
   int_t SendCnt_l, SendCnt_u, nnz_loc_l, nnz_loc_u, nnz_loc,
     RecvCnt_l, RecvCnt_u, ind_loc;
-  int_t i, k, j, gb, szsn, gb_n, gb_s, gb_l, fst_s, fst_s_l, lst_s, i_loc;
+  int_t i, k, j, gb, szsn,  gb_n, gb_s, gb_l, fst_s, fst_s_l, lst_s, i_loc;
   int_t nelts, isize;
   float memAux;  /* Memory used during this routine and freed on return */
   float memRet; /* Memory allocated and not freed on return */
@@ -748,6 +748,7 @@ zdist_A(SuperMatrix *A, ScalePermstruct_t *ScalePermstruct,
   int_t  i, it, irow, fst_row, j, jcol, k, gbi, gbj, n, m_loc, jsize, isize;
   int_t  nsupers, nsupers_i, nsupers_j;
   int_t  nnz_loc, nnz_loc_ainf, nnz_loc_asup;    /* number of local nonzeros */
+  int_t  nnz_remote; /* number of remote nonzeros to be sent */
   int_t  SendCnt; /* number of remote nonzeros to be sent */
   int_t  RecvCnt; /* number of remote nonzeros to be sent */
   int_t *ainf_colptr, *ainf_rowind, *asup_rowptr, *asup_colind;
@@ -1200,8 +1201,7 @@ zdist_psymbtonum(fact_t fact, int_t n, SuperMatrix *A,
   int_t nsupers, nsupers_i, nsupers_j, nsupers_ij;
   int_t next_ind;      /* next available position in index[*] */
   int_t next_val;      /* next available position in nzval[*] */
-  int_t *index;        /* indices consist of headers and row subscripts */
-  int   *index1;       /* temporary pointer to array of int */
+  int_t *index;         /* indices consist of headers and row subscripts */
   doublecomplex *lusup, *uval; /* nonzero values in L and U */
   int_t *recvBuf;
   int *ptrToRecv, *nnzToRecv, *ptrToSend, *nnzToSend;
@@ -1211,7 +1211,7 @@ zdist_psymbtonum(fact_t fact, int_t n, SuperMatrix *A,
   int_t  **Ufstnz_br_ptr;  /* size ceil(NSUPERS/Pr) */
   
   /*-- Counts to be used in factorization. --*/
-  int  *ToRecv, *ToSendD, **ToSendR;
+  int_t  *ToRecv, *ToSendD, **ToSendR;
   
   /*-- Counts to be used in lower triangular solve. --*/
   int_t  *fmod;          /* Modification count for L-solve.        */
@@ -1328,27 +1328,27 @@ zdist_psymbtonum(fact_t fact, int_t n, SuperMatrix *A,
   /* We first need to set up the L and U data structures and then
    * propagate the values of A into them.
    */
-  if ( !(ToRecv = SUPERLU_MALLOC(nsupers * sizeof(int))) ) {
+  if ( !(ToRecv = intCalloc_dist(nsupers)) ) {
     fprintf(stderr, "Calloc fails for ToRecv[].");
     return (memDist + memNLU);
   }
   memNLU += nsupers * iword;
   
   k = CEILING( nsupers, grid->npcol ); /* Number of local column blocks */
-  if ( !(ToSendR = (int **) SUPERLU_MALLOC(k*sizeof(int*))) ) {
+  if ( !(ToSendR = (int_t **) SUPERLU_MALLOC(k*sizeof(int_t*))) ) {
     fprintf(stderr, "Malloc fails for ToSendR[].");
     return (memDist + memNLU);
   }
   memNLU += k*sizeof(int_t*);
   j = k * grid->npcol;
-  if ( !(index1 = SUPERLU_MALLOC(j * sizeof(int))) ) {
+  if ( !(index = intMalloc_dist(j)) ) {
     fprintf(stderr, "Malloc fails for index[].");
     return (memDist + memNLU);
   }
   memNLU += j*iword;
   
-  for (i = 0; i < j; ++i) index1[i] = EMPTY;
-  for (i = 0,j = 0; i < k; ++i, j += grid->npcol) ToSendR[i] = &index1[j];
+  for (i = 0; i < j; ++i) index[i] = EMPTY;
+  for (i = 0,j = 0; i < k; ++i, j += grid->npcol) ToSendR[i] = &index[j];
   
   /* Auxiliary arrays used to set up L and U block data structures.
      They are freed on return. */
@@ -1385,7 +1385,7 @@ zdist_psymbtonum(fact_t fact, int_t n, SuperMatrix *A,
   Unzval_br_ptr[nsupers_i-1] = NULL;
   Ufstnz_br_ptr[nsupers_i-1] = NULL;
 
-  if ( !(ToSendD = SUPERLU_MALLOC(nsupers_i * sizeof(int))) ) {
+  if ( !(ToSendD = intCalloc_dist(nsupers_i)) ) {
     fprintf(stderr, "Malloc fails for ToSendD[].");
     return (memDist + memNLU);
   }

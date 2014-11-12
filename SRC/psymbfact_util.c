@@ -490,11 +490,7 @@ int_t psymbfact_prLUXpand
 (
  int_t iam, 
  int_t min_new_len, /* minimum new length to allocate */ 
-#if 0
  MemType mem_type,  /* which type of memory to expand  */
-#else /* Sherry */
- int mem_type,  /* which type of memory to expand  */
-#endif
  Llu_symbfact_t *Llu_symbfact, /* modified L/U pruned structures */
  psymbfact_stat_t *PS
  )

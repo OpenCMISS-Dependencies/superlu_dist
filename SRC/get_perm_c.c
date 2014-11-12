@@ -27,7 +27,7 @@ get_metis(
     /*#define METISOPTIONS 8*/
 #define METISOPTIONS 40
     int_t metis_options[METISOPTIONS];
-    int_t i, nm, numflag = 0; /* C-Style ordering */
+    int_t ct, i, j, nm, numflag = 0; /* C-Style ordering */
     int_t *perm, *iperm;
     int_t *b_colptr_int, *b_rowind_int;
     extern int check_perm_dist(char *what, int_t n, int_t *perm);
@@ -201,7 +201,7 @@ getata_dist(
 	ABORT("SUPERLU_MALLOC fails for ata_colptr[]");
     if ( *atanz ) {
 	if ( !(*ata_rowind = (int_t*)SUPERLU_MALLOC(*atanz*sizeof(int_t)) ) ) {
-	    fprintf(stderr, ".. atanz = %ld\n", (long long) *atanz);
+	    fprintf(stderr, ".. atanz = %ld\n", *atanz);
 	    ABORT("SUPERLU_MALLOC fails for ata_rowind[]");
 	}
     }
@@ -463,7 +463,6 @@ get_perm_c_dist(int_t pnum, int_t ispec, SuperMatrix *A, int_t *perm_c)
 	      break;
 
         case METIS_AT_PLUS_A: /* METIS ordering on A'+A */
-#ifdef METIS
 	      if ( m != n ) ABORT("Matrix is not square");
 	      at_plus_a_dist(n, Astore->nnz, Astore->colptr, Astore->rowind,
 			     &bnz, &b_colptr, &b_rowind);
@@ -477,12 +476,8 @@ get_perm_c_dist(int_t pnum, int_t ispec, SuperMatrix *A, int_t *perm_c)
 	      }
 
 #if ( PRNTlevel>=1 )
-		  if ( !pnum ) printf(".. Use METIS ordering on A'+A\n");
+	      if ( !pnum ) printf(".. Use METIS ordering on A'+A\n");
 #endif
-#else
-		  ABORT("Not compiled with METIS! Set USE_METIS flag.");
-#endif
-
 	      return;
 
         default:

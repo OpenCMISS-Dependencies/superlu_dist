@@ -23,21 +23,12 @@ PLAT		= _xe6
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB	        =
-#
-############################################################################
-## parmetis 4.x.x, 32-bit integer
-PARMETIS_DIR	:= ${HOME}/Edison/lib/parmetis-4.0.3
-## parmetis 4.x.x, 64-bit integer
-# PARMETIS_DIR	:= ${HOME}/Edison/lib/parmetis-4.0.3_64
-
-METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
-I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
-############################################################################
+METISLIB    	= -L/usr/common/acts/PARMETIS/3.1.1/craypgi-xe6_O -lmetis
+PARMETISLIB   	= -L/usr/common/acts/PARMETIS/3.1.1/craypgi-xe6_O -lparmetis
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS	 	= -lpgf90 -lpgf90_rpm1
@@ -57,9 +48,9 @@ RANLIB       	= ranlib
 # C compiler setup
 CC           	= cc
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = -fast -std=c99 -m64 $(I_PARMETIS) \
+CFLAGS          = -fast -Mipa=fast,safe -m64 \
 		-DDEBUGlevel=0 -DPRNTlevel=1 -DPROFlevel=0 \
-#		-D_LONGINT
+		-D_LONGINT
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 NOOPTS		= -O0

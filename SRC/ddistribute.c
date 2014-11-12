@@ -74,7 +74,6 @@ ddistribute(fact_t fact, int_t n, SuperMatrix *A,
     int_t next_lind;      /* next available position in index[*] */
     int_t next_lval;      /* next available position in nzval[*] */
     int_t *index;         /* indices consist of headers and row subscripts */
-    int   *index1;        /* temporary pointer to array of int */
     double *lusup, *uval; /* nonzero values in L and U */
     double **Lnzval_bc_ptr;  /* size ceil(NSUPERS/Pc) */
     int_t  **Lrowind_bc_ptr; /* size ceil(NSUPERS/Pc) */
@@ -82,7 +81,7 @@ ddistribute(fact_t fact, int_t n, SuperMatrix *A,
     int_t  **Ufstnz_br_ptr;  /* size ceil(NSUPERS/Pr) */
 
     /*-- Counts to be used in factorization. --*/
-    int  *ToRecv, *ToSendD, **ToSendR;
+    int_t  *ToRecv, *ToSendD, **ToSendR;
 
     /*-- Counts to be used in lower triangular solve. --*/
     int_t  *fmod;          /* Modification count for L-solve.        */
@@ -288,20 +287,20 @@ ddistribute(fact_t fact, int_t n, SuperMatrix *A,
 	usub = Glu_freeable->usub;    /* compressed U subscripts */
 	xusub = Glu_freeable->xusub;
     
-	if ( !(ToRecv = SUPERLU_MALLOC(nsupers * sizeof(int))) )
+	if ( !(ToRecv = intCalloc_dist(nsupers)) )
 	    ABORT("Calloc fails for ToRecv[].");
 
 	k = CEILING( nsupers, grid->npcol );/* Number of local column blocks */
-	if ( !(ToSendR = (int **) SUPERLU_MALLOC(k*sizeof(int*))) )
+	if ( !(ToSendR = (int_t **) SUPERLU_MALLOC(k*sizeof(int_t*))) )
 	    ABORT("Malloc fails for ToSendR[].");
 	j = k * grid->npcol;
-	if ( !(index1 = SUPERLU_MALLOC(j * sizeof(int))) )
+	if ( !(index = intMalloc_dist(j)) )
 	    ABORT("Malloc fails for index[].");
 #if ( PRNTlevel>=1 )
 	mem_use += (float) k*sizeof(int_t*) + (j + nsupers)*iword;
 #endif
-	for (i = 0; i < j; ++i) index1[i] = EMPTY;
-	for (i = 0,j = 0; i < k; ++i, j += grid->npcol) ToSendR[i] = &index1[j];
+	for (i = 0; i < j; ++i) index[i] = EMPTY;
+	for (i = 0,j = 0; i < k; ++i, j += grid->npcol) ToSendR[i] = &index[j];
 	k = CEILING( nsupers, grid->nprow ); /* Number of local block rows */
 
 	/* Pointers to the beginning of each block row of U. */
@@ -311,7 +310,7 @@ ddistribute(fact_t fact, int_t n, SuperMatrix *A,
 	if ( !(Ufstnz_br_ptr = (int_t**)SUPERLU_MALLOC(k * sizeof(int_t*))) )
 	    ABORT("Malloc fails for Ufstnz_br_ptr[].");
 	
-	if ( !(ToSendD = SUPERLU_MALLOC(k * sizeof(int))) )
+	if ( !(ToSendD = intCalloc_dist(k)) )
 	    ABORT("Malloc fails for ToSendD[].");
 	if ( !(ilsum = intMalloc_dist(k+1)) )
 	    ABORT("Malloc fails for ilsum[].");

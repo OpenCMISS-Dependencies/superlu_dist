@@ -31,8 +31,7 @@
 include ../make.inc
 INCLUDEDIR = -I../SRC
 
-DEXM	= pddrive.o dcreate_matrix.o #pdgstrf.o #pdgstrf2.o 
-#pdgssvx.o
+DEXM	= pddrive.o dcreate_matrix.o sp_ienv.o
 # pdgstrs_lsum_X1.o pdgstrf_X1.o
 DEXM1	= pddrive1.o dcreate_matrix.o
 DEXM2	= pddrive2.o dcreate_matrix.o
@@ -43,8 +42,7 @@ DEXMG1	= pddrive1_ABglobal.o sp_ienv.o
 DEXMG2	= pddrive2_ABglobal.o
 DEXMG3	= pddrive3_ABglobal.o
 DEXMG4	= pddrive4_ABglobal.o
-ZEXM	= pzdrive.o zcreate_matrix.o sp_ienv.o 
-	#pzgstrf2.o pzgstrf_v3.3.o pzgstrf.o
+ZEXM	= pzdrive.o zcreate_matrix.o sp_ienv.o #pzgstrf_X1.o
 ZEXM1	= pzdrive1.o zcreate_matrix.o
 ZEXM2	= pzdrive2.o zcreate_matrix.o
 ZEXM3	= pzdrive3.o zcreate_matrix.o
@@ -129,8 +127,6 @@ pzdrive3_ABglobal: $(ZEXMG3) $(DSUPERLULIB)
 pzdrive4_ABglobal: $(ZEXMG4) $(DSUPERLULIB)
 	$(LOADER) $(LOADOPTS) $(ZEXMG4) $(LIBS) -lm -o $@
 
-#pdgstrf.o: dscatter.c dSchCompUdt-cuda.c pdgstrf.c
-#	$(CC) $(CFLAGS) $(CDEFS) $(BLASDEF) $(INCLUDEDIR) -c pdgstrf.c $(VERBOSE)
 .c.o:
 	$(CC) $(CFLAGS) $(CDEFS) $(BLASDEF) $(INCLUDEDIR) -c $< $(VERBOSE)
 
