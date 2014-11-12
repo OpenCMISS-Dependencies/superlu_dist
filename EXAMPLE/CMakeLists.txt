@@ -1,6 +1,9 @@
 macro(LINK TARGET)
     target_link_libraries(${TARGET} 
         PRIVATE superlu_dist blas)
+    #if (USE_PARMETIS)
+    #    target_link_libraries(${TARGET} PUBLIC parmetis metis)
+    #endif()
                 #${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES})
     target_include_directories(${TARGET} PRIVATE ../SRC)
     if (UNIX)

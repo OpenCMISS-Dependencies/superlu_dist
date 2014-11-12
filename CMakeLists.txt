@@ -3,14 +3,14 @@ project (SUPERLU_DIST VERSION 4.3 LANGUAGES C Fortran)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 set(BUILD_PRECISION dz CACHE STRING "${PROJECT_NAME} - Build precisions (d|z|dz)")
-option(USE_PARMETIS "Use ParMETIS library" OFF)
-option(USE_METIS "Use METIS library" ON)
+option(USE_PARMETIS "Use ParMETIS library" ON)
+#option(USE_METIS "Use METIS library" OFF)
 
 find_package(BLAS CONFIG REQUIRED)
 if (USE_PARMETIS)
     find_package(PARMETIS CONFIG REQUIRED)
-elseif(USE_METIS)
-    find_package(METIS 4 CONFIG REQUIRED)
+#elseif(USE_METIS)
+#    find_package(METIS 5 CONFIG REQUIRED)
 endif()
 
 find_package(MPI REQUIRED)
