@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project (SUPERLU_DIST VERSION 4.3 LANGUAGES C Fortran)
+project (SUPERLU_DIST VERSION 3.3 LANGUAGES C Fortran)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 set(BUILD_PRECISION dz CACHE STRING "${PROJECT_NAME} - Build precisions (d|z|dz)")
@@ -17,15 +17,13 @@ find_package(MPI REQUIRED)
 
 SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
 SET(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
-SET(CMAKE_C_FLAGS "-std=c99 -openmp")
+SET(CMAKE_C_FLAGS "-std=c99 -openmp -Wno-format")
 SET(CMAKE_C_FLAGS_RELEASE "-O3") # not recognized: -w2 -mkl
 SET(CMAKE_C_FLAGS_DEBUG "-O0 -Wall")
-SET(CMAKE_Fortran_FLAGS "-Mnomain")
-SET(CMAKE_Fortran_FLAGS_RELEASE "-fast")
-#SET(CMAKE_Fortran_FLAGS_DEBUG )
 
 # collecting source file defs in subdirectory
 add_subdirectory(SRC)
+add_subdirectory(FORTRAN)
 
 if (BUILD_TESTS)
     enable_testing()

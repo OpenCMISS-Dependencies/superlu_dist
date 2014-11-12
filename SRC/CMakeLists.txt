@@ -1,16 +1,9 @@
 SET(ALLAUX sp_ienv.c etree.c sp_colorder.c get_perm_c.c
     mmd.c comm.c memory.c util.c superlu_grid.c
-	pxerbla.c superlu_timer.c GetDiagU.c symbfact.c
-	psymbfact.c psymbfact_util.c mc64ad_dist.c
-	static_schedule.c)
+	pxerbla.c superlu_timer.c GetDiagU.c mc64ad.c symbfact.c
+	psymbfact.c psymbfact_util.c)
 if (USE_PARMETIS)
     LIST(APPEND ALLAUX get_perm_c_parmetis.c)
-    set_source_files_properties(get_perm_c_parmetis.c 
-        PROPERTIES COMPILE_FLAGS -DPARMETIS)
-endif()
-if (USE_METIS)
-    set_source_files_properties(get_perm_c.c
-        PROPERTIES COMPILE_FLAGS -DMETIS)
 endif()
 
 #### LAPACK auxiliary routines	
@@ -24,21 +17,19 @@ SET(zSLUSRC	dcomplex.c zlangs.c zgsequ.c zlaqgs.c zutil.c
 	  zmemory.c zmyblas2.c zsp_blas2.c zsp_blas3.c)
 
 # Routines for double precision parallel SuperLU	  
-SET(dPLUSRC pdgssvx.c pdgssvx_ABglobal.c dreadhb.c dreadrb.c dreadtriple.c dreadMM.c
-	  pdgsequ.c pdlaqgs.c dldperm_dist.c pdlangs.c pdutil.c
-	  pdsymbfact_distdata.c ddistribute.c pddistribute.c
-	  pdgstrf.c pdgstrf2.c
-	  pdgstrs.c pdgstrs1.c pdgstrs_lsum.c pdgstrs_Bglobal.c
-	  pdgsrfs.c pdgsmv.c pdgsrfs_ABXglobal.c pdgsmv_AXglobal.c) 
+SET(dPLUSRC dldperm.c ddistribute.c pdgstrf.c pdgstrs_Bglobal.c
+	  pdgstrs1.c pdgssvx_ABglobal.c pdgsrfs_ABXglobal.c pdgsmv_AXglobal.c
+	  pdgssvx.c pdgstrs.c pddistribute.c pdlangs.c pdutil.c
+	  pdgsequ.c pdlaqgs.c pdgsrfs.c pdgsmv.c pdgstrs_lsum.c
+	  pdsymbfact_distdata.c dreadhb.c dreadrb.c dreadtriple.c dreadMM.c) 
 
 #
 # Routines for double complex parallel SuperLU
-SET(zPLUSRC pzgssvx.c pzgssvx_ABglobal.c zreadhb.c zreadrb.c zreadtriple.c zreadMM.c
-	  pzgsequ.c pzlaqgs.c zldperm_dist.c pzlangs.c pzutil.c
-	  pzsymbfact_distdata.c zdistribute.c pzdistribute.c
-	  pzgstrf.c pzgstrf2.c
-	  pzgstrs.c pzgstrs1.c pzgstrs_lsum.c pzgstrs_Bglobal.c
-	  pzgsrfs.c pzgsmv.c pzgsrfs_ABXglobal.c pzgsmv_AXglobal.c)
+SET(zPLUSRC zldperm.c zdistribute.c pzgssvx_ABglobal.c pzgstrf.c
+	  pzgstrs1.c pzgstrs_Bglobal.c pzgsrfs_ABXglobal.c pzgsmv_AXglobal.c
+	  pzgssvx.c pzgstrs.c pzdistribute.c pzlangs.c pzutil.c
+	  pzgsequ.c pzlaqgs.c pzgsrfs.c pzgsmv.c pzgstrs_lsum.c
+	  pzsymbfact_distdata.c zreadhb.c zreadtriple.c zreadMM.c)
 	  
 SET(SRC_d ${ALLAUX} ${LAAUX} ${dSLUSRC} ${dPLUSRC})
 SET(SRC_z ${ALLAUX} ${LAAUX} ${zSLUSRC} ${zPLUSRC})
@@ -84,8 +75,8 @@ if (USE_PARMETIS)
 #elseif (USE_METIS)
 #    target_link_libraries(superlu_dist PUBLIC metis4)
 endif()
-target_include_directories(superlu_dist 
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SRC>
+target_include_directories(superlu_dist PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 set_target_properties(superlu_dist PROPERTIES
     OUTPUT_NAME superlu-dist-${SUPERLU_DIST_VERSION})
