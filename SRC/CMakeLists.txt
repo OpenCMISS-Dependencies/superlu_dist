@@ -73,7 +73,7 @@ target_link_libraries(superlu_dist
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
 #elseif (USE_METIS)
-#    target_link_libraries(superlu_dist PUBLIC metis4)
+#    target_link_libraries(superlu_dist PUBLIC metis)
 endif()
 target_include_directories(superlu_dist PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
