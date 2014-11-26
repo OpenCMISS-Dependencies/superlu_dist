@@ -64,7 +64,7 @@ if(BUILD_PRECISION MATCHES [z])
     LIST(APPEND OBJS "$<TARGET_OBJECTS:slud_z>")
 endif()
 
-add_library(superlu_dist STATIC ${OBJS})
+add_library(superlu_dist ${OBJS})
 
 target_link_libraries(superlu_dist 
     PUBLIC blas
