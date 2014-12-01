@@ -15,7 +15,7 @@ if(BUILD_PRECISION MATCHES [d])
         dcreate_dist_matrix.c superlu_c2f_dwrap.c
         $<TARGET_OBJECTS:fmod>)
     target_link_libraries(f_pddrive superlu_dist)
-    
+
     add_executable(f_5x5 f_5x5.f90 sp_ienv.c
         dcreate_dist_matrix.c superlu_c2f_dwrap.c
         $<TARGET_OBJECTS:fmod>)
