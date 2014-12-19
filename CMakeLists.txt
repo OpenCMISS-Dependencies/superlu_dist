@@ -18,7 +18,7 @@ find_package(MPI REQUIRED)
 
 SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
 SET(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
-SET(CMAKE_C_FLAGS "-std=c99 -Wno-format")
+SET(CMAKE_C_FLAGS "-std=c99 -Wno-format -Wno-error=format-security")
 SET(CMAKE_C_FLAGS_RELEASE "-O3") # not recognized: -w2 -mkl
 SET(CMAKE_C_FLAGS_DEBUG "-O0 -Wall")
 
