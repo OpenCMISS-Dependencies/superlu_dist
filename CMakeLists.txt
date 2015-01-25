@@ -15,9 +15,15 @@ elseif(USE_METIS)
 endif()
 
 find_package(MPI REQUIRED)
-
-SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
-SET(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
+if (MPI_C_COMPILER)
+    SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
+endif()
+if (MPI_Fortran_COMPILER)
+    SET(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
+endif()
+if (WIN32)
+    include_directories(${MPI_C_INCLUDE_PATH})
+endif()
 SET(CMAKE_C_FLAGS "-std=c99 -Wno-format -Wno-error=format-security")
 SET(CMAKE_C_FLAGS_RELEASE "-O3") # not recognized: -w2 -mkl
 SET(CMAKE_C_FLAGS_DEBUG "-O0 -Wall")

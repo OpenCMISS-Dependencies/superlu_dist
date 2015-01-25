@@ -68,7 +68,7 @@ add_library(superlu_dist ${OBJS})
 
 target_link_libraries(superlu_dist 
     PUBLIC blas
-    #${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES}
+    ${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES}
 )
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
