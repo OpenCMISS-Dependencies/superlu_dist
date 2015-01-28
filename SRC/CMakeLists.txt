@@ -21,7 +21,7 @@ SET(dPLUSRC dldperm.c ddistribute.c pdgstrf.c pdgstrs_Bglobal.c
 	  pdgstrs1.c pdgssvx_ABglobal.c pdgsrfs_ABXglobal.c pdgsmv_AXglobal.c
 	  pdgssvx.c pdgstrs.c pddistribute.c pdlangs.c pdutil.c
 	  pdgsequ.c pdlaqgs.c pdgsrfs.c pdgsmv.c pdgstrs_lsum.c
-	  pdsymbfact_distdata.c dreadhb.c dreadrb.c dreadtriple.c dreadMM.c) 
+	  pdsymbfact_distdata.c dreadhb.c dreadrb.c dreadtriple.c) #dreadMM.c 
 
 #
 # Routines for double complex parallel SuperLU
@@ -29,7 +29,7 @@ SET(zPLUSRC zldperm.c zdistribute.c pzgssvx_ABglobal.c pzgstrf.c
 	  pzgstrs1.c pzgstrs_Bglobal.c pzgsrfs_ABXglobal.c pzgsmv_AXglobal.c
 	  pzgssvx.c pzgstrs.c pzdistribute.c pzlangs.c pzutil.c
 	  pzgsequ.c pzlaqgs.c pzgsrfs.c pzgsmv.c pzgstrs_lsum.c
-	  pzsymbfact_distdata.c zreadhb.c zreadtriple.c zreadMM.c)
+	  pzsymbfact_distdata.c zreadhb.c zreadtriple.c) #zreadMM.c
 	  
 SET(SRC_d ${ALLAUX} ${LAAUX} ${dSLUSRC} ${dPLUSRC})
 SET(SRC_z ${ALLAUX} ${LAAUX} ${zSLUSRC} ${zPLUSRC})
