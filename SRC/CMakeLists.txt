@@ -91,4 +91,4 @@ include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-version.cmake
     COMPATIBILITY AnyNewerVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-version.cmake
-    DESTINATION lib/cmake)
+    DESTINATION ${PACKAGE_CONFIG_DIR})
