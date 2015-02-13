@@ -84,8 +84,7 @@ set_target_properties(superlu_dist PROPERTIES
 install(TARGETS superlu_dist EXPORT superlu_dist-config
     DESTINATION lib
     INCLUDES DESTINATION include/superlu_dist)
-install(EXPORT superlu_dist-config
-    DESTINATION lib/cmake)
+install(EXPORT superlu_dist-config DESTINATION ${PACKAGE_CONFIG_DIR})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION include/superlu_dist
     FILES_MATCHING PATTERN "*.h")
 include(CMakePackageConfigHelpers)
