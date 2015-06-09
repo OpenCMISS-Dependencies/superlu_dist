@@ -31,8 +31,8 @@ SET(zPLUSRC zldperm.c zdistribute.c pzgssvx_ABglobal.c pzgstrf.c
 	  pzgsequ.c pzlaqgs.c pzgsrfs.c pzgsmv.c pzgstrs_lsum.c
 	  pzsymbfact_distdata.c zreadhb.c zreadtriple.c) #zreadMM.c
 	  
-SET(SRC_d ${ALLAUX} ${LAAUX} ${dSLUSRC} ${dPLUSRC})
-SET(SRC_z ${ALLAUX} ${LAAUX} ${zSLUSRC} ${zPLUSRC})
+SET(SRC_d ${dSLUSRC} ${dPLUSRC})
+SET(SRC_z ${zSLUSRC} ${zPLUSRC})
 
 SET(COMPDEFS
         USE_VENDOR_BLAS # using ocms blas
@@ -40,7 +40,8 @@ SET(COMPDEFS
         DEBUGlevel=0 PRNTlevel=1 PROFlevel=0 # misc
         _LONGINT # build type
 )
-SET(OBJS )
+add_library(aux OBJECT ${ALLAUX} ${LAAUX})
+SET(OBJS $<TARGET_OBJECTS:aux>)
 if(BUILD_PRECISION MATCHES [d])
     add_library(slud_d OBJECT ${SRC_d})
     target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
