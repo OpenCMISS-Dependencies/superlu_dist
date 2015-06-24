@@ -93,7 +93,7 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config
     COMPATIBILITY AnyNewerVersion)
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake 
     "include(CMakeFindDependencyMacro)\r\n"
-    "set(_OLD_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
+    	"set(${PROJECT_NAME}_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
     "find_dependency(BLAS ${BLAS_VERSION})\r\n"
 )
 if (USE_PARMETIS)
@@ -105,7 +105,7 @@ endif()
 if (WITH_OPENMP)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(OpenMP)\r\n")
 endif()
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "set(_IMPORT_PREFIX \${_OLD_IMPORT_PREFIX})")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "set(_IMPORT_PREFIX \${${PROJECT_NAME}_IMPORT_PREFIX})")
 install(FILES 
     ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-version.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake
