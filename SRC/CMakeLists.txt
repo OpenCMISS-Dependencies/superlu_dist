@@ -40,8 +40,8 @@ SET(COMPDEFS
         DEBUGlevel=0 PRNTlevel=1 PROFlevel=0 # misc
         _LONGINT # build type
 )
-add_library(aux OBJECT ${ALLAUX} ${LAAUX})
-SET(OBJS $<TARGET_OBJECTS:aux>)
+add_library(auxiliary OBJECT ${ALLAUX} ${LAAUX})
+SET(OBJS $<TARGET_OBJECTS:auxiliary>)
 if(BUILD_PRECISION MATCHES [d])
     add_library(slud_d OBJECT ${SRC_d})
     target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
