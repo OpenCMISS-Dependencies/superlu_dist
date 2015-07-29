@@ -7,6 +7,11 @@ set(BUILD_PRECISION dz CACHE STRING "${PROJECT_NAME} - Build precisions (d|z|dz)
 option(USE_PARMETIS "Use ParMETIS library (includes use of METIS)" ON)
 option(USE_METIS "Use METIS library" OFF)
 option(WITH_OPENMP "${PROJECT_NAME} - Use OpenMP" ON)
+set(FORTRAN_MANGLING "Add_" CACHE STRING "${PROJECT_NAME} - Fortran mangling scheme")
+
+# SuperLU requires the C99 standard
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 find_package(BLAS ${BLAS_VERSION} REQUIRED)
 if (USE_PARMETIS)
@@ -25,8 +30,8 @@ endif()
 if (WIN32)
     include_directories(${MPI_C_INCLUDE_PATH})
 endif()
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wno-format -Wno-error=format-security")
-SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3") # not recognized: -w2 -mkl
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format -Wno-error=format-security")
+SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall")
 
 if (WITH_OPENMP)
