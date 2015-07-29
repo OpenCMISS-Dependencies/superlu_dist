@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project (SUPERLU_DIST VERSION 3.3 LANGUAGES C Fortran)
+project (SUPERLU_DIST VERSION 4.1 LANGUAGES C Fortran)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 set(PACKAGE_CONFIG_DIR "lib/cmake" CACHE STRING "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)")

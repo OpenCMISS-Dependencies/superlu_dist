@@ -1,7 +1,9 @@
 SET(ALLAUX sp_ienv.c etree.c sp_colorder.c get_perm_c.c
     mmd.c comm.c memory.c util.c superlu_grid.c
 	pxerbla.c superlu_timer.c GetDiagU.c mc64ad.c symbfact.c
-	psymbfact.c psymbfact_util.c)
+	psymbfact.c psymbfact_util.c
+	# New in 4.1
+	mc64ad_dist.c static_schedule.c)
 if (USE_PARMETIS)
     LIST(APPEND ALLAUX get_perm_c_parmetis.c)
 endif()
@@ -21,7 +23,9 @@ SET(dPLUSRC dldperm.c ddistribute.c pdgstrf.c pdgstrs_Bglobal.c
 	  pdgstrs1.c pdgssvx_ABglobal.c pdgsrfs_ABXglobal.c pdgsmv_AXglobal.c
 	  pdgssvx.c pdgstrs.c pddistribute.c pdlangs.c pdutil.c
 	  pdgsequ.c pdlaqgs.c pdgsrfs.c pdgsmv.c pdgstrs_lsum.c
-	  pdsymbfact_distdata.c dreadhb.c dreadrb.c dreadtriple.c) #dreadMM.c 
+	  pdsymbfact_distdata.c dreadhb.c dreadrb.c dreadtriple.c
+	  # New in 4.1
+	  dldperm_dist.c dreadMM.c pdgstrf2.c) 
 
 #
 # Routines for double complex parallel SuperLU
@@ -29,7 +33,9 @@ SET(zPLUSRC zldperm.c zdistribute.c pzgssvx_ABglobal.c pzgstrf.c
 	  pzgstrs1.c pzgstrs_Bglobal.c pzgsrfs_ABXglobal.c pzgsmv_AXglobal.c
 	  pzgssvx.c pzgstrs.c pzdistribute.c pzlangs.c pzutil.c
 	  pzgsequ.c pzlaqgs.c pzgsrfs.c pzgsmv.c pzgstrs_lsum.c
-	  pzsymbfact_distdata.c zreadhb.c zreadtriple.c) #zreadMM.c
+	  pzsymbfact_distdata.c zreadhb.c zreadtriple.c
+	  # New in 4.1
+	  zldperm_dist.c zreadMM.c pzgstrf2.c)
 	  
 SET(SRC_d ${dSLUSRC} ${dPLUSRC})
 SET(SRC_z ${zSLUSRC} ${zPLUSRC})
@@ -41,6 +47,12 @@ SET(COMPDEFS
         _LONGINT # build type
 )
 add_library(aux OBJECT ${ALLAUX} ${LAAUX})
+target_include_directories(aux PRIVATE
+         #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
+         $<$<BOOL:${USE_PARMETIS}>:
+             $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
+             $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
+    )
 SET(OBJS $<TARGET_OBJECTS:aux>)
 if(BUILD_PRECISION MATCHES [d])
     add_library(slud_d OBJECT ${SRC_d})
