@@ -793,8 +793,8 @@ static_schedule(superlu_options_t * options, int m, int n,
                 }
                 il = ib;
             } else if (nnodes_l[lb] + nnodes_u[lb] != 0)
-                printf (" # %d: nnodes[%d]=%d+%d\n", grid->iam, lb,
-                        nnodes_l[lb], nnodes_u[lb]);
+                printf (" # %d: nnodes[" IFMT "]=" IFMT "+" IFMT "\n",
+			grid->iam, lb, nnodes_l[lb], nnodes_u[lb]);
         }
         SUPERLU_FREE (nnodes_u);
 	log_memory(-nsupers * iword, stat);

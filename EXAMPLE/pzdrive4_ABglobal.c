@@ -3,9 +3,10 @@
  * \brief This example illustrates how to divide up the processes into subgroups
  *
  * <pre>
- * -- Distributed SuperLU routine (version 1.0) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * September 1, 1999
+ * April 5, 2015
  * </pre>
  */
 
@@ -55,6 +56,10 @@ int main(int argc, char *argv[])
     char     **cpp, c;
     FILE *fp, *fopen();
 
+    /* prototypes */
+    extern void LUstructInit(const int_t, LUstruct_t *);
+    extern void LUstructFree(LUstruct_t *);
+    extern void Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
 
     /* ------------------------------------------------------------
        INITIALIZE MPI ENVIRONMENT. 
@@ -133,7 +138,7 @@ int main(int argc, char *argv[])
 	    zreadhb_dist(iam, fp, &m, &n, &nnz, &a, &asub, &xa);
 	
 	    printf("\tDimension\t%dx%d\t # nonzeros %d\n", m, n, nnz);
-	    printf("\tProcess grid\t%d X %d\n", grid1.nprow, grid1.npcol);
+	    printf("\tProcess grid\t%d X %d\n", (int) grid1.nprow, (int) grid1.npcol);
 
 	    /* Broadcast matrix A to the other PEs. */
 	    MPI_Bcast( &m,   1,   mpi_int_t,  0, grid1.comm );
@@ -190,9 +195,14 @@ int main(int argc, char *argv[])
          */
 	set_default_options_dist(&options);
 
+        if (!iam) {
+	    print_sp_ienv_dist(&options);
+	    print_options_dist(&options);
+        }
+
 	/* Initialize ScalePermstruct and LUstruct. */
 	ScalePermstructInit(m, n, &ScalePermstruct);
-	LUstructInit(m, n, &LUstruct);
+	LUstructInit(n, &LUstruct);
 
 	/* Initialize the statistics variables. */
 	PStatInit(&stat);
@@ -234,7 +244,7 @@ int main(int argc, char *argv[])
 	    zreadhb_dist(iam, fp, &m, &n, &nnz, &a, &asub, &xa);
 	
 	    printf("\tDimension\t%dx%d\t # nonzeros %d\n", m, n, nnz);
-	    printf("\tProcess grid\t%d X %d\n", grid2.nprow, grid2.npcol);
+	    printf("\tProcess grid\t%d X %d\n", (int) grid2.nprow, (int) grid2.npcol);
 
 	    /* Broadcast matrix A to the other PEs. */
 	    MPI_Bcast( &m,   1,   mpi_int_t,  0, grid2.comm );
@@ -293,7 +303,7 @@ int main(int argc, char *argv[])
 	
 	/* Initialize ScalePermstruct and LUstruct. */
 	ScalePermstructInit(m, n, &ScalePermstruct);
-	LUstructInit(m, n, &LUstruct);
+	LUstructInit(n, &LUstruct);
 
 	/* Initialize the statistics variables. */
 	PStatInit(&stat);

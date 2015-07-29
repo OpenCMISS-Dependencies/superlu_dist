@@ -36,7 +36,7 @@ superlu_abort_and_exit_dist(char *msg)
 {
     /*fprintf(stderr, msg);
     fflush(stderr);*/
-    printf(msg);
+    printf("%s", msg);
     exit (-1);
 }
 
@@ -60,7 +60,7 @@ void *superlu_malloc_dist(size_t size)
 	ABORT("superlu_malloc: out of memory");
     }
 
-    ((int_t *) buf)[0] = size;
+    ((size_t *) buf)[0] = size;
 #if 0
     superlu_malloc_total += size + DWORD;
 #else
@@ -80,11 +80,11 @@ void superlu_free_dist(void *addr)
 	ABORT("superlu_free: tried to free NULL+DWORD pointer");
 
     { 
-	int_t n = ((int_t *) p)[0];
+	int_t n = ((size_t *) p)[0];
 	
 	if ( !n )
 	    ABORT("superlu_free: tried to free a freed pointer");
-	*((int_t *) p) = 0; /* Set to zero to detect duplicate free's. */
+	*((size_t *) p) = 0; /* Set to zero to detect duplicate free's. */
 #if 0	
 	superlu_malloc_total -= (n + DWORD);
 #else
@@ -279,8 +279,8 @@ int_t symbfact_SubInit
 	    xusub  = (int_t *)user_malloc_dist((n+1) * iword, HEAD);
 	}
 
-	lsub  = (int_t *) expand(&nzlmax, LSUB, 0, 0, Glu_freeable);
-	usub  = (int_t *) expand(&nzumax, USUB, 0, 0, Glu_freeable);
+	lsub  = (int_t *) expand(&nzlmax, (MemType) LSUB, 0, 0, Glu_freeable);
+	usub  = (int_t *) expand(&nzumax, (MemType) USUB, 0, 0, Glu_freeable);
 
 	while ( !lsub || !usub ) {
 	    if ( Glu_freeable->MemModel == SYSTEM ) {
@@ -297,11 +297,11 @@ int_t symbfact_SubInit
 	    }
 #if ( PRNTlevel>=1 )
 	    printf("(%d).. symbfact_SubInit() reduce size:"
-		   "nzlmax %ld, nzumax %ld\n", iam, nzlmax, nzumax);
+		   "nzlmax %ld, nzumax %ld\n", iam, (long long) nzlmax, (long long) nzumax);
 	    fflush(stdout);
 #endif
-	    lsub  = (int_t *) expand( &nzlmax, LSUB, 0, 0, Glu_freeable );
-	    usub  = (int_t *) expand( &nzumax, USUB, 0, 1, Glu_freeable );
+	    lsub  = (int_t *) expand( &nzlmax, (MemType) LSUB, 0, 0, Glu_freeable );
+	    usub  = (int_t *) expand( &nzumax, (MemType) USUB, 0, 1, Glu_freeable );
 	}
 
 	Glu_persist->xsup    = xsup;
@@ -366,7 +366,8 @@ int_t symbfact_SubXpand
     void   *new_mem;
     
 #if ( DEBUGlevel>=1 )
-    printf("symbfact_SubXpand(): jcol %d, next %ld, maxlen %ld, MemType %d\n",
+    printf("symbfact_SubXpand(): jcol " IFMT ", next " IFMT ", maxlen " IFMT
+	   ", MemType " IFMT "\n",
 	   jcol, next, *maxlen, mem_type);
 #endif    
 
@@ -375,7 +376,7 @@ int_t symbfact_SubXpand
     if ( !new_mem ) {
 	int_t    nzlmax  = Glu_freeable->nzlmax;
 	int_t    nzumax  = Glu_freeable->nzumax;
-    	fprintf(stderr, "Can't expand MemType %d: jcol %d\n", mem_type, jcol);
+    	fprintf(stderr, "Can't expand MemType %d: jcol " IFMT "\n", mem_type, jcol);
     	return (memory_usage(nzlmax, nzumax, n) + n);
     }
 

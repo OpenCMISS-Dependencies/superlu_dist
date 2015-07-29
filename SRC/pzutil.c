@@ -28,10 +28,10 @@ int pzCompRow_loc_to_CompCol_global
     int_t *colind, *rowptr;
     int_t *colptr_loc, *rowind_loc;
     int_t m_loc, n, i, j, k, l;
-    int_t colnnz, fst_row, m_loc_max, nnz_loc, nnz_max, nnz;
+    int_t colnnz, fst_row, nnz_loc, nnz;
     doublecomplex *a_recv;  /* Buffer to receive the blocks of values. */
     doublecomplex *a_buf;   /* Buffer to merge blocks into block columns. */
-    int_t *colcnt, *itemp;
+    int_t *itemp;
     int_t *colptr_send; /* Buffer to redistribute the column pointers of the 
 			   local block rows.
 			   Use n_loc+1 pointers for each block. */
@@ -267,7 +267,7 @@ int pzCompRow_loc_to_CompCol_global
     SUPERLU_FREE(rowind_recv);
     if ( need_value) SUPERLU_FREE(a_recv);
 #if ( DEBUGlevel>=1 )
-    if ( !grid->iam ) printf("sizeof(NCformat) %d\n", sizeof(NCformat));
+    if ( !grid->iam ) printf("sizeof(NCformat) %lu\n", sizeof(NCformat));
     CHECK_MALLOC(grid->iam, "Exit pzCompRow_loc_to_CompCol_global");
 #endif
     return 0;
@@ -399,6 +399,11 @@ int zSolveInit(superlu_options_t *options, SuperMatrix *A,
     int_t        i, fst_row, m_loc, p;
     int          procs;
 
+    /* prototypes */
+    extern int_t pxgstrs_init(int_t, int_t, int_t, int_t,
+	                      int_t [], int_t [], gridinfo_t *grid,
+	                      Glu_persist_t *, SOLVEstruct_t *);
+
     Astore = (NRformat_loc *) A->Store;
     fst_row = Astore->fst_row;
     m_loc = Astore->m_loc;
@@ -479,7 +484,10 @@ int zSolveInit(superlu_options_t *options, SuperMatrix *A,
 void zSolveFinalize(superlu_options_t *options, SOLVEstruct_t *SOLVEstruct)
 {
     int_t *it;
+    extern void pxgstrs_finalize(pxgstrs_comm_t *);
+
     pxgstrs_finalize(SOLVEstruct->gstrs_comm);
+
     if ( options->RefineInitialized ) {
         pzgsmv_finalize(SOLVEstruct->gsmv_comm);
 	options->RefineInitialized = NO;

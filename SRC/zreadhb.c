@@ -153,20 +153,20 @@ zreadhb_dist(int iam, FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
 
 #if ( DEBUGlevel>=1 )
     if ( !iam ) {
-	printf("%d rows, %d nonzeros\n", *nrow, *nonz);
-	printf("colnum %d, colsize %d\n", colnum, colsize);
-	printf("rownum %d, rowsize %d\n", rownum, rowsize);
-	printf("valnum %d, valsize %d\n", valnum, valsize);
+	printf(IFMT " rows, " IFMT " nonzeros\n", *nrow, *nonz);
+	printf("colnum " IFMT ", colsize " IFMT "\n", colnum, colsize);
+	printf("rownum " IFMT ", rowsize " IFMT "\n", rownum, rowsize);
+	printf("valnum " IFMT ", valsize " IFMT "\n", valnum, valsize);
     }
 #endif
     
     ReadVector(fp, *ncol+1, *colptr, colnum, colsize);
 #if ( DEBUGlevel>=1 )
-    if ( !iam )	printf("read colptr[%d] = %d\n", *ncol, (*colptr)[*ncol]);
+    if ( !iam )	printf("read colptr[" IFMT "] = " IFMT "\n", *ncol, (*colptr)[*ncol]);
 #endif
     ReadVector(fp, *nonz, *rowind, rownum, rowsize);
 #if ( DEBUGlevel>=1 )
-    if ( !iam )	printf("read rowind[%d] = %d\n", *nonz-1, (*rowind)[*nonz-1]);
+    if ( !iam )	printf("read rowind[" IFMT "] = " IFMT "\n", *nonz-1, (*rowind)[*nonz-1]);
 #endif
     if ( numer_lines ) {
         zReadValues(fp, *nonz, *nzval, valnum, valsize);

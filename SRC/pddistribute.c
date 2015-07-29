@@ -58,7 +58,6 @@ dReDistribute_A(SuperMatrix *A, ScalePermstruct_t *ScalePermstruct,
     int_t  *perm_c; /* column permutation vector */
     int_t  i, irow, fst_row, j, jcol, k, gbi, gbj, n, m_loc, jsize;
     int_t  nnz_loc;    /* number of local nonzeros */
-    int_t  nnz_remote; /* number of remote nonzeros to be sent */
     int_t  SendCnt; /* number of remote nonzeros to be sent */
     int_t  RecvCnt; /* number of remote nonzeros to be sent */
     int_t  *nnzToSend, *nnzToRecv, maxnnzToRecv;
@@ -304,6 +303,7 @@ dReDistribute_A(SuperMatrix *A, ScalePermstruct_t *ScalePermstruct,
     CHECK_MALLOC(iam, "Exit dReDistribute_A()");
 #endif
  
+    return 0;
 } /* dReDistribute_A */
 
 float
@@ -378,6 +378,7 @@ pddistribute(fact_t fact, int_t n, SuperMatrix *A,
     int_t next_lind;      /* next available position in index[*] */
     int_t next_lval;      /* next available position in nzval[*] */
     int_t *index;         /* indices consist of headers and row subscripts */
+    int   *index1;        /* temporary pointer to array of int */
     double *lusup, *uval; /* nonzero values in L and U */
     double **Lnzval_bc_ptr;  /* size ceil(NSUPERS/Pc) */
     int_t  **Lrowind_bc_ptr; /* size ceil(NSUPERS/Pc) */
@@ -385,7 +386,7 @@ pddistribute(fact_t fact, int_t n, SuperMatrix *A,
     int_t  **Ufstnz_br_ptr;  /* size ceil(NSUPERS/Pr) */
 
     /*-- Counts to be used in factorization. --*/
-    int_t  *ToRecv, *ToSendD, **ToSendR;
+    int  *ToRecv, *ToSendD, **ToSendR;
 
     /*-- Counts to be used in lower triangular solve. --*/
     int_t  *fmod;          /* Modification count for L-solve.        */
@@ -597,20 +598,21 @@ pddistribute(fact_t fact, int_t n, SuperMatrix *A,
 	usub = Glu_freeable->usub;    /* compressed U subscripts */
 	xusub = Glu_freeable->xusub;
     
-	if ( !(ToRecv = intCalloc_dist(nsupers)) )
-	    ABORT("Calloc fails for ToRecv[].");
+	if ( !(ToRecv = (int *) SUPERLU_MALLOC(nsupers * sizeof(int))) )
+	    ABORT("Malloc fails for ToRecv[].");
+	for (i = 0; i < nsupers; ++i) ToRecv[i] = 0;
 
 	k = CEILING( nsupers, grid->npcol );/* Number of local column blocks */
-	if ( !(ToSendR = (int_t **) SUPERLU_MALLOC(k*sizeof(int_t*))) )
+	if ( !(ToSendR = (int **) SUPERLU_MALLOC(k*sizeof(int*))) )
 	    ABORT("Malloc fails for ToSendR[].");
 	j = k * grid->npcol;
-	if ( !(index = intMalloc_dist(j)) )
+	if ( !(index1 = SUPERLU_MALLOC(j * sizeof(int))) )
 	    ABORT("Malloc fails for index[].");
 #if ( PRNTlevel>=1 )
 	mem_use += (float) k*sizeof(int_t*) + (j + nsupers)*iword;
 #endif
-	for (i = 0; i < j; ++i) index[i] = EMPTY;
-	for (i = 0,j = 0; i < k; ++i, j += grid->npcol) ToSendR[i] = &index[j];
+	for (i = 0; i < j; ++i) index1[i] = EMPTY;
+	for (i = 0,j = 0; i < k; ++i, j += grid->npcol) ToSendR[i] = &index1[j];
 	k = CEILING( nsupers, grid->nprow ); /* Number of local block rows */
 
 	/* Pointers to the beginning of each block row of U. */
@@ -620,8 +622,9 @@ pddistribute(fact_t fact, int_t n, SuperMatrix *A,
 	if ( !(Ufstnz_br_ptr = (int_t**)SUPERLU_MALLOC(k * sizeof(int_t*))) )
 	    ABORT("Malloc fails for Ufstnz_br_ptr[].");
 	
-	if ( !(ToSendD = intCalloc_dist(k)) )
+	if ( !(ToSendD = SUPERLU_MALLOC(k * sizeof(int))) )
 	    ABORT("Malloc fails for ToSendD[].");
+	for (i = 0; i < k; ++i) ToSendD[i] = NO;
 	if ( !(ilsum = intMalloc_dist(k+1)) )
 	    ABORT("Malloc fails for ilsum[].");
 
@@ -938,7 +941,7 @@ pddistribute(fact_t fact, int_t n, SuperMatrix *A,
 		    Lrowind_bc_ptr[ljb] = index;
 		    if (!(Lnzval_bc_ptr[ljb] = 
                          doubleMalloc_dist(len*nsupc))) {
-			fprintf(stderr, "col block %d ", jb);
+			fprintf(stderr, "col block " IFMT " ", jb);
 			ABORT("Malloc fails for Lnzval_bc_ptr[*][]");
 		    }
 		    mybufmax[0] = SUPERLU_MAX( mybufmax[0], len1 );
@@ -1011,7 +1014,7 @@ pddistribute(fact_t fact, int_t n, SuperMatrix *A,
 	Llu->ldalsum = ldaspa;
 	
 #if ( PRNTlevel>=1 )
-	if ( !iam ) printf(".. # L blocks %d\t# U blocks %d\n",
+	if ( !iam ) printf(".. # L blocks " IFMT "\t# U blocks " IFMT "\n",
 			   nLblocks, nUblocks);
 #endif
 

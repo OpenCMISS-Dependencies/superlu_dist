@@ -4,9 +4,10 @@
  * \brief Driver program for PDGSSVX example
  *
  * <pre>
- * -- Distributed SuperLU routine (version 2.0) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * March 15, 2003
+ * April 5, 2015
  * </pre>
  */
 
@@ -43,11 +44,16 @@ int main(int argc, char *argv[])
     gridinfo_t grid;
     double   *berr;
     double   *b, *xtrue, *b1;
-    int_t    i, j, m, n;
-    int_t    nprow, npcol;
-    int      iam, info, ldb, ldx, nrhs;
+    int    i, j, m, n;
+    int    nprow, npcol;
+    int    iam, info, ldb, ldx, nrhs;
     char     **cpp, c;
     FILE *fp, *fopen();
+
+    /* prototypes */
+    extern void LUstructInit(const int_t, LUstruct_t *);
+    extern void LUstructFree(LUstruct_t *);
+    extern void Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
 
     nprow = 1;  /* Default process rows.      */
     npcol = 1;  /* Default process columns.   */
@@ -91,7 +97,10 @@ int main(int argc, char *argv[])
     /* Bail out if I do not belong in the grid. */
     iam = grid.iam;
     if ( iam >= nprow * npcol )	goto out;
-    if ( !iam ) printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
+    if ( !iam ) {
+	printf("Input matrix file: %s\n", *cpp);
+        printf("\tProcess grid\t%d X %d\n", (int)grid.nprow, (int)grid.npcol);
+    }
 
 #if ( VAMPIR>=1 )
     VT_traceoff();
@@ -131,12 +140,17 @@ int main(int argc, char *argv[])
      */
     set_default_options_dist(&options);
 
+    if (!iam) {
+	print_sp_ienv_dist(&options);
+	print_options_dist(&options);
+    }
+
     m = A.nrow;
     n = A.ncol;
 
     /* Initialize ScalePermstruct and LUstruct. */
     ScalePermstructInit(m, n, &ScalePermstruct);
-    LUstructInit(m, n, &LUstruct);
+    LUstructInit(n, &LUstruct);
 
     /* Initialize the statistics variables. */
     PStatInit(&stat);

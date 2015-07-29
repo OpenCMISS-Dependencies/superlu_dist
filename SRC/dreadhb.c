@@ -156,25 +156,25 @@ dreadhb_dist(int iam, FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
 
 #if ( DEBUGlevel>=1 )
     if ( !iam ) {
-	printf("%d rows, %d nonzeros\n", *nrow, *nonz);
-	printf("colnum %d, colsize %d\n", colnum, colsize);
-	printf("rownum %d, rowsize %d\n", rownum, rowsize);
-	printf("valnum %d, valsize %d\n", valnum, valsize);
+	printf(IFMT " rows, " IFMT " nonzeros\n", *nrow, *nonz);
+	printf("colnum " IFMT ", colsize " IFMT "\n", colnum, colsize);
+	printf("rownum " IFMT ", rowsize " IFMT "\n", rownum, rowsize);
+	printf("valnum " IFMT ", valsize " IFMT "\n", valnum, valsize);
     }
 #endif
     
     ReadVector(fp, *ncol+1, *colptr, colnum, colsize);
 #if ( DEBUGlevel>=1 )
-    if ( !iam )	printf("read colptr[%d] = %d\n", *ncol, (*colptr)[*ncol]);
+    if ( !iam )	printf("read colptr[" IFMT "] = " IFMT "\n", *ncol, (*colptr)[*ncol]);
 #endif
     ReadVector(fp, *nonz, *rowind, rownum, rowsize);
 #if ( DEBUGlevel>=1 )
-    if ( !iam )	printf("read rowind[%d] = %d\n", *nonz-1, (*rowind)[*nonz-1]);
+    if ( !iam )	printf("read rowind[" IFMT "] = " IFMT "\n", *nonz-1, (*rowind)[*nonz-1]);
 #endif
     if ( numer_lines ) {
         dReadValues(fp, *nonz, *nzval, valnum, valsize);
 #if ( DEBUGlevel>=1 )
-	if ( !iam ) printf("read nzval[%d] = %e\n", *nonz-1, (*nzval)[*nonz-1]);
+	if ( !iam ) printf("read nzval[" IFMT "] = %e\n", *nonz-1, (*nzval)[*nonz-1]);
 #endif
     }
 
@@ -341,7 +341,7 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
 	if ( t_rowind[i] != j ) { /* not diagonal */
 	  a_rowind[k] = t_rowind[i];
 	  a_val[k] = t_val[i];
-#ifdef DEBUG
+#if (DEBUGlevel >= 2)
 	  if ( fabs(a_val[k]) < 4.047e-300 )
 	      printf("%5d: %e\n", k, a_val[k]);
 #endif
@@ -352,7 +352,7 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
       for (i = al_colptr[j]; i < al_colptr[j+1]; ++i) {
 	a_rowind[k] = al_rowind[i];
 	a_val[k] = al_val[i];
-#ifdef DEBUG
+#if (DEBUGlevel >= 2)
 	if ( fabs(a_val[k]) < 4.047e-300 )
 	    printf("%5d: %e\n", k, a_val[k]);
 #endif
@@ -362,7 +362,7 @@ FormFullA(int_t n, int_t *nonz, double **nzval, int_t **rowind, int_t **colptr)
       a_colptr[j+1] = k;
     }
 
-    printf("FormFullA: new_nnz = %d, k = %d\n", new_nnz, k);
+    printf("FormFullA: new_nnz = " IFMT ", k = " IFMT "\n", new_nnz, k);
 
     SUPERLU_FREE(al_val);
     SUPERLU_FREE(al_rowind);

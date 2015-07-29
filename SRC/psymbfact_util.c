@@ -139,13 +139,14 @@ int_t psymbfact_LUXpandMem
     len_tcopy_fend = 0;
   }
 #ifdef TEST_SYMB
-  printf ("Pe[%d] LUXpand mem_t %d vtxXp %d\n", 
+  printf ("Pe[" IFMT "] LUXpand mem_t " IFMT " vtxXp " IFMT "\n",
 	  iam, mem_type, vtxXp); 
 #endif
   new_mem = expand (prev_len, min_new_len, prev_mem,
 		    &new_len, len_tcopy_fbeg, len_tcopy_fend, PS);
   if ( !new_mem ) {
-    fprintf(stderr, "Pe[%d] Can't exp MemType %d: prv_len %d min_new %d new_l %d\n",
+    fprintf(stderr, "Pe[" IFMT "] Can't exp MemType " IFMT ": prv_len " IFMT
+	    " min_new " IFMT " new_l " IFMT "\n",
 	   iam, mem_type, prev_len, min_new_len, new_len);
     return ERROR_RET;
   }
@@ -490,7 +491,11 @@ int_t psymbfact_prLUXpand
 (
  int_t iam, 
  int_t min_new_len, /* minimum new length to allocate */ 
+#if 0
  MemType mem_type,  /* which type of memory to expand  */
+#else /* Sherry */
+ int mem_type,  /* which type of memory to expand  */
+#endif
  Llu_symbfact_t *Llu_symbfact, /* modified L/U pruned structures */
  psymbfact_stat_t *PS
  )

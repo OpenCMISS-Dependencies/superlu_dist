@@ -111,9 +111,8 @@
 </pre>
 */
 int
-sp_dgemm_dist(char *transa, char *transb, int m, int n, int k, 
-	      double alpha, SuperMatrix *A, double *b, int ldb, 
-	      double beta, double *c, int ldc)
+sp_dgemm_dist(char *transa, int n, double alpha, SuperMatrix *A,
+	      double *b, int ldb, double beta, double *c, int ldc)
 {
 
     int    incx = 1, incy = 1;

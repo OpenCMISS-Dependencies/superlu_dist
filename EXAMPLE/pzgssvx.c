@@ -3,10 +3,11 @@
  * \brief Solves a system of linear equations A*X=B
  *
  * <pre>
- * -- Distributed SuperLU routine (version 2.2) --
+ * -- Distributed SuperLU routine (version 4.0) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * November 1, 2007
- * Feburary 20, 2008
+ * October 22, 2012
+ * August 15, 2014
  * </pre>
  */
 
@@ -325,8 +326,8 @@
  *         o IterRefine (IterRefine_t)
  *           Specifies how to perform iterative refinement.
  *           = NO:     no iterative refinement.
- *           = DOUBLE: accumulate residual in double precision.
- *           = EXTRA:  accumulate residual in extra precision.
+ *           = SLU_DOUBLE: accumulate residual in double precision.
+ *           = SLU_EXTRA:  accumulate residual in extra precision.
  *
  *         NOTE: all options must be indentical on all processes when
  *               calling this routine.
@@ -562,9 +563,9 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	*info = -1;
     else if ( options->ColPerm < 0 || options->ColPerm > MY_PERMC )
 	*info = -1;
-    else if ( options->IterRefine < 0 || options->IterRefine > EXTRA )
+    else if ( options->IterRefine < 0 || options->IterRefine > SLU_EXTRA )
 	*info = -1;
-    else if ( options->IterRefine == EXTRA ) {
+    else if ( options->IterRefine == SLU_EXTRA ) {
 	*info = -1;
 	fprintf(stderr, "Extra precise iterative refinement yet to support.");
     } else if ( A->nrow != A->ncol || A->nrow < 0 || A->Stype != SLU_NR_loc
@@ -579,8 +580,6 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	pxerbla("pzgssvx", grid, -*info);
 	return;
     }
-
-    options->RowPerm = NO;
 
     factored = (Fact == FACTORED);
     Equil = (!factored && options->Equil == YES);
@@ -683,9 +682,11 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	    pzlaqgs(A, R, C, rowcnd, colcnd, amax, equed);
 
 	    if ( lsame_(equed, "R") ) {
-		ScalePermstruct->DiagScale = rowequ = ROW;
+		ScalePermstruct->DiagScale = ROW;
+		rowequ = ROW;
 	    } else if ( lsame_(equed, "C") ) {
-		ScalePermstruct->DiagScale = colequ = COL;
+		ScalePermstruct->DiagScale = COL;
+		colequ = COL;
 	    } else if ( lsame_(equed, "B") ) {
 		ScalePermstruct->DiagScale = BOTH;
 		rowequ = ROW;
@@ -756,7 +757,7 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 
 	            if ( !iam ) {
 		        /* Process 0 finds a row permutation */
-		        zldperm(job, m, nnz, colptr, rowind, a_GA,
+		        zldperm_dist(job, m, nnz, colptr, rowind, a_GA,
 		                perm_r, R1, C1);
 		
 		        MPI_Bcast( perm_r, m, mpi_int_t, 0, grid->comm );
@@ -892,14 +893,31 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	    nprocs_num = grid->nprow * grid->npcol;
   	    noDomains = (int) ( pow(2, ((int) LOG2( nprocs_num ))));
 
-	    /* create a new communicator for the first noDomains processors in
-	       grid->comm */
+	    /* create a new communicator for the first noDomains
+               processes in grid->comm */
 	    key = iam;
     	    if (iam < noDomains) col = 0;
 	    else col = MPI_UNDEFINED;
 	    MPI_Comm_split (grid->comm, col, key, &symb_comm );
 
-	    permc_spec = PARMETIS; /* only works with PARMETIS */
+	    if ( permc_spec == NATURAL || permc_spec == MY_PERMC ) {
+		if ( permc_spec == NATURAL ) {
+		     for (j = 0; j < n; ++j) perm_c[j] = j;
+                }
+		if ( !(sizes = intMalloc_dist(2 * noDomains)) ) 
+		     ABORT("SUPERLU_MALLOC fails for sizes.");
+		if ( !(fstVtxSep = intMalloc_dist(2 * noDomains)) )
+		    ABORT("SUPERLU_MALLOC fails for fstVtxSep.");
+		for (i = 0; i < 2*noDomains - 2; ++i) {
+		    sizes[i] = 0;
+		    fstVtxSep[i] = 0;
+		}
+		sizes[2*noDomains - 2] = m;
+		fstVtxSep[2*noDomains - 2] = 0;
+	    } else if ( permc_spec != PARMETIS ) {   /* same as before */
+		printf("{%4d,%4d}: pzgssvx: invalid ColPerm option when ParSymbfact is used\n",
+		       MYROW(grid->iam, grid), MYCOL(grid->iam, grid));
+	    }
         }
 
 	if ( permc_spec != MY_PERMC && Fact == DOFACT ) {
@@ -940,6 +958,7 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	            for (i = GACcolbeg[j]; i < GACcolend[j]; ++i) {
 		        irow = GACrowind[i];
 		        GACrowind[i] = perm_c[irow];
+			/*			printf("%8d%8d\n", GACrowind[i], j);*/
 	            }
 	        }
 
@@ -964,12 +983,12 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 		    QuerySpace_dist(n, -iinfo, Glu_freeable, &symb_mem_usage);
 #if ( PRNTlevel>=1 )
 		    if ( !iam ) {
-		    	printf("\tNo of supers %ld\n", Glu_persist->supno[n-1]+1);
-		    	printf("\tSize of G(L) %ld\n", Glu_freeable->xlsub[n]);
-		    	printf("\tSize of G(U) %ld\n", Glu_freeable->xusub[n]);
+		    	printf("\tNo of supers %ld\n", (long long) Glu_persist->supno[n-1]+1);
+		    	printf("\tSize of G(L) %ld\n", (long long) Glu_freeable->xlsub[n]);
+		    	printf("\tSize of G(U) %ld\n", (long long) Glu_freeable->xusub[n]);
 		    	printf("\tint %d, short %d, float %d, double %d\n", 
-			       sizeof(int_t), sizeof(short), sizeof(float),
-			       sizeof(double));
+			       (int) sizeof(int_t), (int) sizeof(short),
+        		       (int) sizeof(float), (int) sizeof(double));
 		    	printf("\tSYMBfact (MB):\tL\\U %.2f\ttotal %.2f\texpansions %d\n",
 			   	symb_mem_usage.for_lu*1e-6, 
 			   	symb_mem_usage.total*1e-6,
@@ -1047,11 +1066,50 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	pzgstrf(options, m, n, anorm, LUstruct, grid, stat, info);
 	stat->utime[FACT] = SuperLU_timer_() - t;
 
+#if 0
+
+// #ifdef GPU_PROF
+
+//  if(!iam )
+//  {
+//      char* ttemp;
+
+//      ttemp = getenv("IO_FILE");
+//      if(ttemp!=NULL)
+//      {   
+//          printf("File being opend is %s\n",ttemp );
+//          FILE* fp;
+//          fp = fopen(ttemp,"w");
+//          if(!fp)
+//          {
+//              fprintf(stderr," Couldn't open output file %s\n",ttemp);
+//          }
+
+//          int nsup=Glu_persist->supno[n-1]+1;
+//          int ii;
+//          for (ii = 0; ii < nsup; ++ii)
+//          {
+//                  fprintf(fp,"%d,%d,%d,%d,%d,%d\n",gs1.mnk_min_stats[ii],gs1.mnk_min_stats[ii+nsup],
+//                  gs1.mnk_min_stats[ii+2*nsup],
+//                  gs1.mnk_max_stats[ii],gs1.mnk_max_stats[ii+nsup],gs1.mnk_max_stats[ii+2*nsup]);
+//          }
+
+//          // lastly put the timeing stats that we need
+
+//          fprintf(fp,"Min %lf Max %lf totaltime %lf \n",gs1.osDgemmMin,gs1.osDgemmMax,stat->utime[FACT]);
+//          fclose(fp);
+//      }
+
+//  }
+// #endif
+
+#endif
+
 	if ( options->PrintStat ) {
 	    int_t TinyPivots;
 	    float for_lu, total, max, avg, temp;
 
-	    zQuerySpace_dist(n, LUstruct, grid, &num_mem_usage);
+	    zQuerySpace_dist(n, LUstruct, grid, stat, &num_mem_usage);
 
 	    if (parSymbFact == TRUE) {
 	        /* The memory used in the redistribution routine
@@ -1084,13 +1142,18 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	    MPI_Reduce( &num_mem_usage.total, &total,
 		       1, MPI_FLOAT, MPI_SUM, 0, grid->comm );
 
-	    if ( !iam ) {
-		printf("\tNUMfact space (MB) sum(procs):  L\\U\t%.2f\tall\t%.2f\n",
-		       for_lu*1e-6, total*1e-6);
-		printf("\tTotal highmark (MB):  "
-		       "All\t%.2f\tAvg\t%.2f\tMax\t%.2f\n",
-		       avg*1e-6, avg/grid->nprow/grid->npcol*1e-6, max*1e-6);
-	    }
+            if (!iam) {
+		printf("\n** Memory Usage **********************************\n");
+                printf("** NUMfact space (MB): (sum-of-all-processes)\n"
+		       "    L\\U :        %8.2f |  Total : %8.2f\n",
+		       for_lu * 1e-6, total * 1e-6);
+                printf("** Total highmark (MB):\n"
+		       "    Sum-of-all : %8.2f | Avg : %8.2f  | Max : %8.2f\n",
+		       avg * 1e-6,  
+		       avg / grid->nprow / grid->npcol * 1e-6,
+		       max * 1e-6);
+		printf("**************************************************\n");
+            }
 	}
     
     } /* end if (!factored) */
@@ -1136,7 +1199,10 @@ pzgssvx(superlu_options_t *options, SuperMatrix *A,
 	    ABORT("Malloc fails for X[]");
 	x_col = X;  b_col = B;
 	for (j = 0; j < nrhs; ++j) {
+#if 0 /* Sherry */
 	    for (i = 0; i < m_loc; ++i) x_col[i] = b_col[i];
+#endif
+            memcpy(x_col, b_col, m_loc * sizeof(doublecomplex));
 	    x_col += ldx;  b_col += ldb;
 	}
 

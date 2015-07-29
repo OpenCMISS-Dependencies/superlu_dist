@@ -3,10 +3,10 @@
  * \brief C interface functions for the Fortran90 wrapper.
  *
  * <pre>
- * -- Distributed SuperLU routine (version 3.2) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * October 2012
- *
+ * April 5, 2015
  */
 
 #include "superlu_zdefs.h"
@@ -214,6 +214,13 @@ void f_superlu_gridinit(int *Bcomm, int_t *nprow, int_t *npcol, fptr *grid)
    superlu_gridinit(f2c_comm(Bcomm), *nprow, *npcol, (gridinfo_t *) *grid);
 }
 
+void f_superlu_gridmap(int *Bcomm, int_t *nprow, int_t *npcol, 
+                       int_t *usermap, int_t *ldumap,
+	 fptr *grid)
+{
+   superlu_gridmap(f2c_comm(Bcomm), *nprow, *npcol, usermap, *ldumap, (gridinfo_t *) *grid);
+}
+
 void f_superlu_gridexit(fptr *grid)
 {
    superlu_gridexit((gridinfo_t *) *grid);
@@ -241,11 +248,15 @@ void f_PStatFree(fptr *stat)
 
 void f_LUstructInit(int_t *m, int_t *n, fptr *LUstruct)
 {
-   LUstructInit(*m, *n, (LUstruct_t *) *LUstruct);
+   extern void LUstructInit(const int_t, LUstruct_t *);
+
+   LUstructInit(*m, (LUstruct_t *) *LUstruct);
 }
 
 void f_LUstructFree(fptr *LUstruct)
 {
+   extern void LUstructFree(LUstruct_t *);
+
    LUstructFree((LUstruct_t *) *LUstruct);
 }
 

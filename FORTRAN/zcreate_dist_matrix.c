@@ -85,7 +85,7 @@ int zcreate_dist_matrix(SuperMatrix *A, int_t m, int_t n, int_t nnz,
         for(i=0; i<n+1; i++)
 	  colptr[i]=colptr_g[i]; /* - 1;*/
 
-	printf("(%d) before bcast ...\n", iam);
+
 	/* Broadcast matrix A to the other PEs. */
 	MPI_Bcast( &m,     1,   mpi_int_t,  0, grid->comm );
 	MPI_Bcast( &n,     1,   mpi_int_t,  0, grid->comm );
@@ -94,7 +94,6 @@ int zcreate_dist_matrix(SuperMatrix *A, int_t m, int_t n, int_t nnz,
 	MPI_Bcast( rowind, nnz, mpi_int_t,  0, grid->comm );
 	MPI_Bcast( colptr, n+1, mpi_int_t,  0, grid->comm );
     } else {
-	printf("(%d) before bcast ...\n", iam);
 	/* Receive matrix A from PE 0. */
 	MPI_Bcast( &m,   1,   mpi_int_t,  0, grid->comm );
 	MPI_Bcast( &n,   1,   mpi_int_t,  0, grid->comm );
@@ -192,4 +191,5 @@ int zcreate_dist_matrix(SuperMatrix *A, int_t m, int_t n, int_t nnz,
 #endif
     return 0;
 }
+
 

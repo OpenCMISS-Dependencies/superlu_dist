@@ -25,12 +25,21 @@ PLAT		= _i386
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.0.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB      	= /usr/lib/libblas.so.3
-METISLIB	=
-PARMETISLIB	=
+
+############################################################################
+## parmetis 4.x.x, 32-bit integer
+PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
+## parmetis 4.x.x, 64-bit integer
+# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
+
+METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
+PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
+I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
+############################################################################
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS	 	= 
@@ -50,7 +59,7 @@ RANLIB       	= ranlib
 # C compiler setup
 CC           	= mpicc
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = -pipe -O2
+CFLAGS          = -pipe -O2 ${I_PARMETIS}
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 NOOPTS		= 

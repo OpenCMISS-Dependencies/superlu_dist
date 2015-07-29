@@ -12,7 +12,7 @@
 
 void pxerbla(char *srname, gridinfo_t *grid, int_t info)
 {
-    printf("{%4d,%4d}: On entry to %6s, parameter number %2d had an illegal value\n",
+    printf("{" IFMT "," IFMT "}: On entry to %6s, parameter number " IFMT " had an illegal value\n",
 	   MYROW(grid->iam, grid), MYCOL(grid->iam, grid), srname, info);
 
 }

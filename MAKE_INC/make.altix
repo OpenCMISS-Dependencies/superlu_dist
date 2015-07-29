@@ -20,13 +20,22 @@ PLAT            = _altix
 #  The name of the libraries to be created/linked to
 #
 DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST-branch
-DSUPERLULIB     = $(DSuperLUroot)/lib/libsuperlu_dist_3.0.a
+DSUPERLULIB     = $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
 
 MKLHOME		= /usr/common/intel/mkl/8.1.014
 BLASDEF         = -DUSE_VENDOR_BLAS
 BLASLIB         = -L${MKLHOME}/lib/64 -lmkl_ipf -lguide
-PARMETISLIB	= -L$(HOME)/Codes/ParMetis-3.1 -lparmetis
-METISLIB	= -lmetis
+
+############################################################################
+## parmetis 4.x.x, 32-bit integer
+PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3
+## parmetis 4.x.x, 64-bit integer
+# PARMETIS_DIR	:= ${HOME}/Carver/lib/parmetis-4.0.3_64
+
+METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
+PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
+I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
+############################################################################
 
 # Define the required Fortran libraries, if you use C compiler to link
 FLIBS		=
@@ -47,7 +56,7 @@ RANLIB          = ranlib
 CC              = icc
 ISA             = -ftz -mp
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = $(ISA) -O3 -DDEBUGlevel=0 -DPRNTlevel=0
+CFLAGS          = $(ISA) $(I_PARMETIS) -O3 -DDEBUGlevel=0 -DPRNTlevel=0
 #
 # NOOPTS should be set to be the C flags that turn off any optimization
 NOOPTS          = $(ISA) -O0

@@ -111,9 +111,9 @@
 </pre> 
 */
 int
-sp_zgemm_dist(char *transa, char *transb, int m, int n, int k, 
-	      doublecomplex alpha, SuperMatrix *A, doublecomplex *b, int ldb, 
-	      doublecomplex beta, doublecomplex *c, int ldc)
+sp_zgemm_dist(char *transa, int n, doublecomplex alpha, SuperMatrix *A,
+	      doublecomplex *b, int ldb,  doublecomplex beta,
+	      doublecomplex *c, int ldc)
 {
 
     int    incx = 1, incy = 1;

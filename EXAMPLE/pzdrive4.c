@@ -3,9 +3,10 @@
  * \brief This example illustrates how to divide up the processes into subgroups
  *
  * <pre>
- * -- Distributed SuperLU routine (version 2.0) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * March 15, 2003
+ * April 5, 2015
  * </pre>
  */
 
@@ -48,13 +49,17 @@ int main(int argc, char *argv[])
     doublecomplex   *a, *b, *xtrue;
     int_t    *asub, *xa;
     int_t    i, j, m, n;
-    int_t    nprow, npcol, ldumap, p;
+    int      nprow, npcol, ldumap, p;
     int_t    usermap[6];
     int      iam, info, ldb, ldx, nprocs;
     int      nrhs = 1;   /* Number of right-hand side. */
     char     **cpp, c;
     FILE *fp, *fopen();
 
+    /* prototypes */
+    extern void LUstructInit(const int_t, LUstruct_t *);
+    extern void LUstructFree(LUstruct_t *);
+    extern void Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
 
     /* ------------------------------------------------------------
        INITIALIZE MPI ENVIRONMENT. 
@@ -150,12 +155,17 @@ int main(int argc, char *argv[])
          */
 	set_default_options_dist(&options);
 
+        if (!iam) {
+	    print_sp_ienv_dist(&options);
+    	    print_options_dist(&options);
+        }
+
         m = A.nrow;
         n = A.ncol;
 
 	/* Initialize ScalePermstruct and LUstruct. */
 	ScalePermstructInit(m, n, &ScalePermstruct);
-	LUstructInit(m, n, &LUstruct);
+	LUstructInit(n, &LUstruct);
 
 	/* Initialize the statistics variables. */
 	PStatInit(&stat);
@@ -220,7 +230,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize ScalePermstruct and LUstruct. */
 	ScalePermstructInit(m, n, &ScalePermstruct);
-	LUstructInit(m, n, &LUstruct);
+	LUstructInit(n, &LUstruct);
 
 	/* Initialize the statistics variables. */
 	PStatInit(&stat);

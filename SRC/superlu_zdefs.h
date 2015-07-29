@@ -3,9 +3,10 @@
  * \brief  Distributed SuperLU data types and function prototypes
  *
  * <pre>
- * -- Distributed SuperLU routine (version 2.5) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * November 1, 2007
+ * April 5, 2015
  * </pre>
  */
 
@@ -57,9 +58,9 @@ typedef struct {
 			       */
 
     /*-- Record communication schedule for factorization. --*/
-    int_t   *ToRecv;          /* Recv from no one (0), left (1), and up (2).*/
-    int_t   *ToSendD;         /* Whether need to send down block row.       */
-    int_t   **ToSendR;        /* List of processes to send right block col. */
+    int   *ToRecv;          /* Recv from no one (0), left (1), and up (2).*/
+    int   *ToSendD;         /* Whether need to send down block row.       */
+    int   **ToSendR;        /* List of processes to send right block col. */
 
     /*-- Record communication schedule for forward/back solves. --*/
     int_t   *fmod;            /* Modification count for L-solve            */
@@ -215,6 +216,10 @@ extern void    zFillRHS_dist (char *, int_t, doublecomplex *, int_t,
                               SuperMatrix *, doublecomplex *, int_t);
 extern int     zcreate_matrix(SuperMatrix *, int, doublecomplex **, int *, 
 			      doublecomplex **, int *, FILE *, gridinfo_t *);
+extern int     zcreate_matrix_rb(SuperMatrix *, int, doublecomplex **, int *, 
+			      doublecomplex **, int *, FILE *, gridinfo_t *);
+extern int     zcreate_matrix_dat(SuperMatrix *, int, doublecomplex **, int *, 
+			      doublecomplex **, int *, FILE *, gridinfo_t *);
 
 /* Driver related */
 extern void    zgsequ_dist (SuperMatrix *, double *, double *, double *,
@@ -235,9 +240,8 @@ extern int     sp_ztrsv_dist (char *, char *, char *, SuperMatrix *,
 			      SuperMatrix *, doublecomplex *, int *);
 extern int     sp_zgemv_dist (char *, doublecomplex, SuperMatrix *, doublecomplex *,
 			      int, doublecomplex, doublecomplex *, int);
-extern int     sp_zgemm_dist (char *, char *, int, int, int, doublecomplex,
-			SuperMatrix *, doublecomplex *, int, doublecomplex, 
-			doublecomplex *, int);
+extern int     sp_zgemm_dist (char *, int, doublecomplex, SuperMatrix *,
+                        doublecomplex *, int, doublecomplex, doublecomplex *, int);
 
 extern float zdistribute(fact_t, int_t, SuperMatrix *, Glu_freeable_t *, 
 			 LUstruct_t *, gridinfo_t *);
@@ -254,13 +258,19 @@ extern void  pzgssvx(superlu_options_t *, SuperMatrix *,
 		     SOLVEstruct_t *, double *, SuperLUStat_t *, int *);
 extern int  zSolveInit(superlu_options_t *, SuperMatrix *, int_t [], int_t [],
 		       int_t, LUstruct_t *, gridinfo_t *, SOLVEstruct_t *);
-extern int_t pxgstrs_init(int_t, int_t, int_t, int_t,
-	                  int_t [], int_t [], gridinfo_t *grid,
-	                  Glu_persist_t *, SOLVEstruct_t *);
-extern void pxgstrs_finalize(pxgstrs_comm_t *);
 extern void zSolveFinalize(superlu_options_t *, SOLVEstruct_t *);
-extern void zldperm(int_t, int_t, int_t, int_t [], int_t [],
+extern void zldperm_dist(int_t, int_t, int_t, int_t [], int_t [],
 		    doublecomplex [], int_t *, double [], double []);
+extern int  static_schedule(superlu_options_t *, int, int, 
+		            LUstruct_t *, gridinfo_t *, SuperLUStat_t *,
+			    int_t *, int_t *, int *);
+extern void LUstructInit(const int_t, LUstruct_t *);
+extern void LUstructFree(LUstruct_t *);
+extern void Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
+
+/* #define GPU_PROF
+#define IPM_PROF */
+
 extern int_t pzgstrf(superlu_options_t *, int, int, double,
 		    LUstruct_t*, gridinfo_t*, SuperLUStat_t*, int*);
 extern void pzgstrs_Bglobal(int_t, LUstruct_t *, gridinfo_t *,
@@ -303,10 +313,8 @@ extern double  *doubleMalloc_dist(int_t);
 extern double  *doubleCalloc_dist(int_t);
 extern void  *duser_malloc_dist (int_t, int_t);
 extern void  duser_free_dist (int_t, int_t);
-extern int_t zQuerySpace_dist(int_t, LUstruct_t *, gridinfo_t *, mem_usage_t *);
-extern void    Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
-extern void    LUstructInit(const int_t, const int_t, LUstruct_t *);
-extern void    LUstructFree(LUstruct_t *);
+extern int_t zQuerySpace_dist(int_t, LUstruct_t *, gridinfo_t *,
+			      SuperLUStat_t *, mem_usage_t *);
 
 /* Auxiliary routines */
 extern void    zfill_dist (doublecomplex *, int_t, doublecomplex);
@@ -316,16 +324,23 @@ extern void    pzinf_norm_error(int, int_t, int_t, doublecomplex [], int_t,
 				doublecomplex [], int_t , gridinfo_t *);
 extern void  zreadhb_dist (int, FILE *, int_t *, int_t *, int_t *, 
 			   doublecomplex **, int_t **, int_t **);
+extern void  zreadtriple(FILE *, int_t *, int_t *, int_t *,
+			 doublecomplex **, int_t **, int_t **);
+extern void  zreadrb_dist(int, FILE *, int_t *, int_t *, int_t *,
+		     doublecomplex **, int_t **, int_t **);
+extern void  zreadMM(FILE *, int_t *, int_t *, int_t *,
+	                  doublecomplex **, int_t **, int_t **);
 
 /* Distribute the data for numerical factorization */
 extern float zdist_psymbtonum(fact_t, int_t, SuperMatrix *,
                                 ScalePermstruct_t *, Pslu_freeable_t *, 
                                 LUstruct_t *, gridinfo_t *);
 
+
 /* Routines for debugging */
-extern void  zPrintLblocks(int_t, int_t, gridinfo_t *, Glu_persist_t *,
+extern void  zPrintLblocks(int, int_t, gridinfo_t *, Glu_persist_t *,
 		 	   LocalLU_t *);
-extern void  zPrintUblocks(int_t, int_t, gridinfo_t *, Glu_persist_t *,
+extern void  zPrintUblocks(int, int_t, gridinfo_t *, Glu_persist_t *,
 			   LocalLU_t *);
 extern void  zPrint_CompCol_Matrix_dist(SuperMatrix *);
 extern void  zPrint_Dense_Matrix_dist(SuperMatrix *);
@@ -333,23 +348,34 @@ extern int   zPrint_CompRowLoc_Matrix_dist(SuperMatrix *);
 extern void  PrintDoublecomplex(char *, int_t, doublecomplex *);
 extern int   file_PrintDoublecomplex(FILE *fp, char *, int_t, doublecomplex *);
 
+
 /* BLAS */
 
 #ifdef USE_VENDOR_BLAS
-extern int zgemm_(char*, char*, int*, int*, int*, doublecomplex*,
-                  doublecomplex*, int*, doublecomplex*, int*, doublecomplex*,
-                  doublecomplex*, int*, int, int);
+extern int zgemm_(const char*, const char*, const int*, const int*, const int*,
+                  const doublecomplex*, const doublecomplex*, const int*, const doublecomplex*,
+                  const int*, const doublecomplex*, doublecomplex*, const int*, int, int);
 extern int ztrsv_(char*, char*, char*, int*, doublecomplex*, int*,
                   doublecomplex*, int*, int, int, int);
+extern int ztrsm_(char*, char*, char*, char*, int*, int*, 
+                  doublecomplex*, doublecomplex*, int*, doublecomplex*, 
+                  int*, int, int, int, int);
+extern int zgemv_(char *, int *, int *, doublecomplex *, doublecomplex *a, int *, 
+                  doublecomplex *, int *, doublecomplex *, doublecomplex *, int *, int);
 #else
-extern int zgemm_(char*, char*, int*, int*, int*, doublecomplex*,
-                  doublecomplex*, int*, doublecomplex*, int*, doublecomplex*,
-                  doublecomplex*, int*);
+extern int zgemm_(const char*, const char*, const int*, const int*, const int*,
+                  const doublecomplex*, const doublecomplex*, const int*, 
+                  const doublecomplex*, const int*, const doublecomplex*,
+                  doublecomplex*, const int*);
 extern int ztrsv_(char*, char*, char*, int*, doublecomplex*, int*,
                   doublecomplex*, int*);
+extern int ztrsm_(char*, char*, char*, char*, int*, int*, 
+                  doublecomplex*, doublecomplex*, int*, doublecomplex*, int*);
+extern int zgemv_(char *, int *, int *, doublecomplex *, doublecomplex *a, int *, 
+                  doublecomplex *, int *, doublecomplex *, doublecomplex *, int *);
 #endif
 
-extern int zger_(int*, int*, doublecomplex*, doublecomplex*, int*,
+extern int zgeru_(int*, int*, doublecomplex*, doublecomplex*, int*,
                  doublecomplex*, int*, doublecomplex*, int*);
 
 

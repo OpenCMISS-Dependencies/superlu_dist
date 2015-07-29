@@ -1,10 +1,12 @@
+
+
 /*! @file
  * \brief Memory utilities
  *
  * <pre>
- * -- Distributed SuperLU routine (version 1.0) --
+ * -- Distributed SuperLU routine (version 4.0) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
- * September 1, 1999
+ * October 1, 2014
  * </pre>
  */
 
@@ -59,9 +61,9 @@ void duser_free_dist(int_t bytes, int_t which_end)
  * </pre>
  */
 int_t dQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
-		       mem_usage_t *mem_usage)
+		       SuperLUStat_t *stat, mem_usage_t *mem_usage)
 {
-    register int_t dword, gb, iword, k, maxsup, nb, nsupers;
+    register int_t dword, gb, iword, k, nb, nsupers;
     int_t *index, *xsup;
     int iam, mycol, myrow;
     Glu_persist_t *Glu_persist = LUstruct->Glu_persist;
@@ -72,10 +74,9 @@ int_t dQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
     mycol = MYCOL( iam, grid );
     iword = sizeof(int_t);
     dword = sizeof(double);
-    maxsup = sp_ienv_dist(3);
     nsupers = Glu_persist->supno[n-1] + 1;
     xsup = Glu_persist->xsup;
-    mem_usage->for_lu = 0;
+    mem_usage->for_lu = 0.;
 
     /* For L factor */
     nb = CEILING( nsupers, grid->npcol ); /* Number of local column blocks */
@@ -106,6 +107,7 @@ int_t dQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
 
     /* Working storage to support factorization */
     mem_usage->total = mem_usage->for_lu;
+#if 0
     mem_usage->total +=
 	(float)(( Llu->bufmax[0] + Llu->bufmax[2] ) * iword +
 		( Llu->bufmax[1] + Llu->bufmax[3] + maxsup ) * dword );
@@ -115,6 +117,11 @@ int_t dQuerySpace_dist(int_t n, LUstruct_t *LUstruct, gridinfo_t *grid,
     mem_usage->total += (float)( maxsup * maxsup + maxsup) * iword;
     k = CEILING( nsupers, grid->nprow );
     mem_usage->total += (float)(2 * k * iword);
+#else
+    /*mem_usage->total += stat->current_buffer;*/
+    printf(".. dQuery_Space: peak_buffer %.f * 1.0e-6 (MB)\n", stat->peak_buffer);
+    mem_usage->total += stat->peak_buffer;
+#endif
 
     return 0;
 } /* dQuerySpace_dist */

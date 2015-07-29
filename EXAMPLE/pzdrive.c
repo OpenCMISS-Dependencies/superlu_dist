@@ -3,10 +3,11 @@
  * \brief Driver program for PZGSSVX example
  *
  * <pre>
- * -- Distributed SuperLU routine (version 2.1) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * November 1, 2007
- *
+ * April 5, 2015
+ * </pre>
  */
 
 #include <math.h>
@@ -46,12 +47,17 @@ int main(int argc, char *argv[])
     gridinfo_t grid;
     double   *berr;
     doublecomplex   *b, *xtrue;
-    int_t    m, n;
-    int_t    nprow, npcol;
+    int    m, n;
+    int      nprow, npcol;
     int      iam, info, ldb, ldx, nrhs;
     char     **cpp, c;
     FILE *fp, *fopen();
     extern int cpp_defs();
+
+    /* prototypes */
+    extern void LUstructInit(const int_t, LUstruct_t *);
+    extern void LUstructFree(LUstruct_t *);
+    extern void Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
 
     nprow = 1;  /* Default process rows.      */
     npcol = 1;  /* Default process columns.   */
@@ -70,8 +76,8 @@ int main(int argc, char *argv[])
 	    switch (c) {
 	      case 'h':
 		  printf("Options:\n");
-		  printf("\t-r <int>: process rows    (default %d)\n", nprow);
-		  printf("\t-c <int>: process columns (default %d)\n", npcol);
+		  printf("\t-r <int>: process rows    (default %4d)\n", nprow);
+		  printf("\t-c <int>: process columns (default %4d)\n", npcol);
 		  exit(0);
 		  break;
 	      case 'r': nprow = atoi(*cpp);
@@ -95,7 +101,10 @@ int main(int argc, char *argv[])
     /* Bail out if I do not belong in the grid. */
     iam = grid.iam;
     if ( iam >= nprow * npcol )	goto out;
-    if ( !iam ) printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
+    if ( !iam ) {
+	printf("Input matrix file: %s\n", *cpp);
+        printf("\tProcess grid\t%d X %d\n", (int)grid.nprow, (int)grid.npcol);
+    }
 
 #if ( VAMPIR>=1 )
     VT_traceoff();
@@ -139,12 +148,17 @@ int main(int argc, char *argv[])
     options.ReplaceTinyPivot = NO;
 #endif
 
+    if (!iam) {
+	print_sp_ienv_dist(&options);
+	print_options_dist(&options);
+    }
+
     m = A.nrow;
     n = A.ncol;
 
     /* Initialize ScalePermstruct and LUstruct. */
     ScalePermstructInit(m, n, &ScalePermstruct);
-    LUstructInit(m, n, &LUstruct);
+    LUstructInit(n, &LUstruct);
 
     /* Initialize the statistics variables. */
     PStatInit(&stat);

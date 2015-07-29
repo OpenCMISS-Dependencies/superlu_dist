@@ -84,7 +84,7 @@ int_t symbfact
     int_t *iwork, *perm_r, *segrep, *repfnz;
     int_t *xprune, *marker, *parent, *xplore;
     int_t relax, *desc, *relax_end;
-    int_t nnzL, nnzU;
+    long long int nnzL, nnzU, nnzLU, nnzLSUB;
 
 #if ( DEBUGlevel>=1 )
     CHECK_MALLOC(pnum, "Enter symbfact()");
@@ -169,13 +169,14 @@ int_t symbfact
     countnz_dist(min_mn, xprune, &nnzL, &nnzU, Glu_persist, Glu_freeable);
 
     /* Apply perm_r to L; Compress LSUB array. */
-    i = fixupL_dist(min_mn, perm_r, Glu_persist, Glu_freeable);
+    nnzLSUB = fixupL_dist(min_mn, perm_r, Glu_persist, Glu_freeable);
 
     if ( !pnum && (options->PrintStat == YES)) {
+	nnzLU = nnzL + nnzU - min_mn;
 	printf("\tNonzeros in L       %ld\n", nnzL);
 	printf("\tNonzeros in U       %ld\n", nnzU);
-	printf("\tnonzeros in L+U     %ld\n", nnzL + nnzU - min_mn);
-	printf("\tnonzeros in LSUB    %ld\n", i);
+	printf("\tnonzeros in L+U     %ld\n", nnzLU);
+	printf("\tnonzeros in LSUB    %ld\n", nnzLSUB);
     }
     SUPERLU_FREE(iwork);
 
@@ -249,7 +250,7 @@ static void relax_snode
     }
 
 #if ( DEBUGlevel>=1 )
-    printf(".. No of relaxed snodes: %d\trelax: %d\n", nsuper, relax);
+    printf(".. No of relaxed snodes: " IFMT "\trelax: " IFMT "\n", nsuper, relax);
 #endif
 } /* RELAX_SNODE */
 
@@ -315,7 +316,7 @@ static int_t snode_dfs
 		lsub[nextl++] = krow;
 		if ( nextl >= nzlmax ) {
 		    if (mem_error = symbfact_SubXpand(A->ncol, jcol, nextl,
-						      LSUB, &nzlmax,
+						      (MemType) LSUB, &nzlmax,
 						      Glu_freeable))
 			return (mem_error);
 		    lsub = Glu_freeable->lsub;
@@ -330,7 +331,7 @@ static int_t snode_dfs
     if ( jcol < kcol ) {
 	new_next = nextl + (nextl - xlsub[jcol]);
 	while ( new_next > nzlmax ) {
-	    if (mem_error = symbfact_SubXpand(A->ncol, jcol, nextl, LSUB,
+	    if (mem_error = symbfact_SubXpand(A->ncol, jcol, nextl, (MemType) LSUB,
 					      &nzlmax, Glu_freeable))
 		return (mem_error);
 	    lsub = Glu_freeable->lsub;
@@ -514,7 +515,7 @@ static int_t column_dfs
 	     */
 	    lsub[nextl++] = krow; 	/* krow is indexed into A */
 	    if ( nextl >= nzlmax ) {
-		if ( mem_error = symbfact_SubXpand(A->ncol, jcol, nextl, LSUB,
+		if ( mem_error = symbfact_SubXpand(A->ncol, jcol, nextl, (MemType) LSUB,
 						   &nzlmax, Glu_freeable) )
 		    return (mem_error);
 		lsub = Glu_freeable->lsub;
@@ -558,7 +559,7 @@ static int_t column_dfs
 				if ( nextl >= nzlmax ) {
 				    if ( mem_error =
 					symbfact_SubXpand(A->ncol, jcol, nextl,
-							  LSUB, &nzlmax,
+							  (MemType) LSUB, &nzlmax,
 							  Glu_freeable) )
 					return (mem_error);
 				    lsub = Glu_freeable->lsub;
@@ -704,7 +705,7 @@ static int_t pivotL
 
     /* Diagonal pivot exists? */
     if ( diag == EMPTY ) {
-	printf("At column %d, ", jcol);
+	printf("At column " IFMT ", ", jcol);
 	ABORT("pivotL() encounters zero diagonal");
     }
 
@@ -772,7 +773,7 @@ static int_t set_usub
 
     new_next = nextu + nseg;
     while ( new_next > nzumax ) {
-	if (mem_error = symbfact_SubXpand(n, jcol, nextu, USUB, &nzumax,
+	if (mem_error = symbfact_SubXpand(n, jcol, nextu, (MemType) USUB, &nzumax,
 					  Glu_freeable))
 	    return (mem_error);
 	usub = Glu_freeable->usub;

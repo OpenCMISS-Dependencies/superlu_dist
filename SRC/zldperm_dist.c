@@ -139,7 +139,7 @@ zldperm_dist(int_t job, int_t n, int_t nnz, int_t colptr[], int_t adjncy[],
     printf(".. After MC64AD info %d\tsize of matching %d\n", info[0], num);
 #endif
     if ( info[0] == 1 ) { /* Structurally singular */
-        printf(".. The last %d permutations:\n", n-num);
+        printf(".. The last " IFMT " permutations:\n", n-num);
 	PrintInt10("perm", n-num, &perm[num]);
     }
 

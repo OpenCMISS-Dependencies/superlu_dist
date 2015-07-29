@@ -147,7 +147,7 @@ pzgsrfs_ABXglobal(int_t n, SuperMatrix *A, double anorm, LUstruct_t *LUstruct,
     /*-- Function prototypes --*/
     extern void pzgstrs1(int_t, LUstruct_t *, gridinfo_t *,
 			 doublecomplex *, int, SuperLUStat_t *, int *);
-    extern double dlamch_(char *);
+    /*extern double dlamch_(char *);*/
     
     /* Test the input parameters. */
     *info = 0;
@@ -185,7 +185,7 @@ pzgsrfs_ABXglobal(int_t n, SuperMatrix *A, double anorm, LUstruct_t *LUstruct,
 		   &diag_procs, &diag_len);
 #if ( PRNTlevel>=1 )
     if ( !iam ) {
-	printf(".. number of diag processes = %d\n", num_diag_procs);
+	printf(".. number of diag processes = " IFMT "\n", num_diag_procs);
 	PrintInt10("diag_procs", num_diag_procs, diag_procs);
 	PrintInt10("diag_len", num_diag_procs, diag_len);
     }
@@ -303,7 +303,7 @@ pzgsrfs_ABXglobal(int_t n, SuperMatrix *A, double anorm, LUstruct_t *LUstruct,
 		
 #if ( PRNTlevel>= 1 )
 	    if ( !iam )
-		printf("(%2d) .. Step %2d: berr[j] = %e\n", iam, count, berr[j]);
+		printf("(%2d) .. Step " IFMT ": berr[j] = %e\n", iam, count, berr[j]);
 #endif
 	    if ( berr[j] > eps && berr[j] * 2 <= lstres && count < ITMAX ) {
 		/* Compute new dx. */

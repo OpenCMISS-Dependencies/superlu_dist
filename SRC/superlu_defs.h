@@ -2,10 +2,13 @@
  * \brief Definitions which are precision-neutral
  *
  * <pre>
- * -- Distributed SuperLU routine (version 2.2) --
+ * -- Distributed SuperLU routine (version 4.0) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * November 1, 2007
- * Feburary 20, 2008
+ *
+ * Modified:
+ *     Feburary 20, 2008
+ *     October 11, 2014
  * </pre>
  */
 
@@ -17,25 +20,33 @@
  * Purpose:     Definitions which are precision-neutral
  */
 #ifdef _CRAY
-#include <fortran.h>
-#include <string.h>
+    #include <fortran.h>
+    #include <string.h>
 #endif
+
+#ifdef _OPENMP
+   #include <omp.h>
+#endif
+
 #include <mpi.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
 
+
 /* Define my integer size int_t */
 #ifdef _CRAY
-typedef short int_t;
-/*#undef int   Revert back to int of default size. */
-#define mpi_int_t   MPI_SHORT
+  typedef short int_t;
+  /*#undef int   Revert back to int of default size. */
+  #define mpi_int_t   MPI_SHORT
 #elif defined (_LONGINT)
-typedef long long int int_t;
-#define mpi_int_t   MPI_LONG
+  typedef long long int int_t;
+  #define mpi_int_t   MPI_LONG
+  #define IFMT "%lld"
 #else /* Default */
-typedef int int_t;
-#define mpi_int_t   MPI_INT
+  typedef int int_t;
+  #define mpi_int_t   MPI_INT
+  #define IFMT "%8d"
 #endif
 
 #include "superlu_enum_consts.h"
@@ -45,7 +56,7 @@ typedef int int_t;
 #include "psymbfact.h"
 
 
-/***********************************************************************
+/*********************************************************************** 
  * Constants
  ***********************************************************************/
 /* 
@@ -102,6 +113,13 @@ typedef int int_t;
 /*
  * Communication tags
  */
+/* Return the mpi_tag assuming 5 pairs of communications and MPI_TAG_UB >= 5 *
+ * for each supernodal column "num", the five communications are:            *
+ * 0,1: for sending L to "right"                                             *
+ * 2,3: for sending off-diagonal blocks of U "down"                          *
+ * 4  : for sending the diagonal blcok down (in pxgstrf2)                    */
+#define SLU_MPI_TAG(id,num) ( (5*(num)+id) % tag_ub )
+
     /* For numeric factorization. */
 #if 0
 #define NTAGS    10000
@@ -525,8 +543,39 @@ typedef struct {
     float for_lu;
     float total;
     int_t expansions;
-    int_t nnzL, nnzU;
+    long long int nnzL, nnzU;
 } mem_usage_t;
+
+/* 
+ *-- The new structures added in the hybrid CUDA + OpenMP + MPI code.
+ */
+typedef struct {
+    int_t rukp;
+    int_t iukp;
+    int_t jb;
+    int_t full_u_cols;
+
+} Ublock_info_t;
+
+typedef struct {
+    int_t lptr;
+    int_t ib;
+    int_t FullRow;
+} Remain_info_t;
+
+typedef struct
+{
+    int id, key;
+    void *next;
+} etree_node;
+
+struct pair
+{
+    int ind;
+    int val;
+};
+
+/**--------**/
 
 
 /***********************************************************************
@@ -537,48 +586,29 @@ typedef struct {
 extern "C" {
 #endif
 
-extern void    set_default_options_dist(superlu_options_t *);
-extern void    print_options_dist(superlu_options_t *);
-extern void    Destroy_CompCol_Matrix_dist(SuperMatrix *);
-extern void    Destroy_SuperNode_Matrix_dist(SuperMatrix *);
-extern void    Destroy_SuperMatrix_Store_dist(SuperMatrix *);
-extern void    Destroy_CompCol_Permuted_dist(SuperMatrix *);
-extern void    Destroy_CompRowLoc_Matrix_dist(SuperMatrix *);
-extern void    Destroy_CompRow_Matrix_dist(SuperMatrix *);
-extern void    sp_colorder (superlu_options_t*, SuperMatrix*, int_t*, int_t*,
-			    SuperMatrix*);
-extern int_t   sp_coletree_dist (int_t *, int_t *, int_t *, int_t, int_t,
-				 int_t *);
-extern void    countnz_dist (const int_t, int_t *, int_t *, int_t *,
-			     Glu_persist_t *, Glu_freeable_t *);
-extern int_t   fixupL_dist (const int_t, const int_t *, Glu_persist_t *,
-			    Glu_freeable_t *);
-extern int_t   *TreePostorder_dist (int_t, int_t *);
-extern float   slamch_(char *);
-extern double  dlamch_(char *);
-extern void    *superlu_malloc_dist (size_t);
-extern void    superlu_free_dist (void*);
-extern int_t   *intMalloc_dist (int_t);
-extern int_t   *intCalloc_dist (int_t);
-
-/* Auxiliary routines */
-extern double  SuperLU_timer_ ();
-extern void    superlu_abort_and_exit_dist(char *);
-extern int_t   sp_ienv_dist (int_t);
-extern int     lsame_ (char *, char *);
-extern int     xerbla_ (char *, int *);
-extern void    ifill_dist (int_t *, int_t, int_t);
-extern void    super_stats_dist (int_t, int_t *);
-extern void    ScalePermstructInit(const int_t, const int_t, 
-				   ScalePermstruct_t *);
-extern void    ScalePermstructFree(ScalePermstruct_t *);
-extern void  superlu_gridinit(MPI_Comm, int_t, int_t, gridinfo_t *);
-extern void  superlu_gridmap(MPI_Comm, int_t, int_t, int_t [], int_t,
-			     gridinfo_t *);
-extern void  superlu_gridexit(gridinfo_t *);
-extern void  get_perm_c_dist(int_t, int_t, SuperMatrix *, int_t *);
-extern void  a_plus_at_dist(const int_t, const int_t, int_t *, int_t *,
-			    int_t *, int_t **, int_t **);
+extern void   set_default_options_dist(superlu_options_t *);
+extern void   superlu_gridinit(MPI_Comm, int_t, int_t, gridinfo_t *);
+extern void   superlu_gridmap(MPI_Comm, int_t, int_t, int_t [], int_t,
+			      gridinfo_t *);
+extern void   superlu_gridexit(gridinfo_t *);
+extern void   print_options_dist(superlu_options_t *);
+extern void   print_sp_ienv_dist(superlu_options_t *);
+extern void   Destroy_CompCol_Matrix_dist(SuperMatrix *);
+extern void   Destroy_SuperNode_Matrix_dist(SuperMatrix *);
+extern void   Destroy_SuperMatrix_Store_dist(SuperMatrix *);
+extern void   Destroy_CompCol_Permuted_dist(SuperMatrix *);
+extern void   Destroy_CompRowLoc_Matrix_dist(SuperMatrix *);
+extern void   Destroy_CompRow_Matrix_dist(SuperMatrix *);
+extern void   sp_colorder (superlu_options_t*, SuperMatrix*, int_t*, int_t*,
+			   SuperMatrix*);
+extern int    sp_symetree_dist(int_t *, int_t *, int_t *, int_t, int_t *);
+extern int    sp_coletree_dist (int_t *, int_t *, int_t *, int_t, int_t, int_t *);
+extern void   get_perm_c_dist(int_t, int_t, SuperMatrix *, int_t *);
+extern void   at_plus_a_dist(const int_t, const int_t, int_t *, int_t *,
+			     int_t *, int_t **, int_t **);
+extern int    genmmd_dist_(int_t *, int_t *, int_t *a, 
+			   int_t *, int_t *, int_t *, int_t *, 
+			   int_t *, int_t *, int_t *, int_t *, int_t *);
 extern void  bcast_tree(void *, int, MPI_Datatype, int, int,
 			gridinfo_t *, int, int *);
 extern int_t symbfact(superlu_options_t *, int, SuperMatrix *, int_t *,
@@ -588,6 +618,31 @@ extern int_t symbfact_SubInit(fact_t, void *, int_t, int_t, int_t, int_t,
 extern int_t symbfact_SubXpand(int_t, int_t, int_t, MemType, int_t *,
 			       Glu_freeable_t *);
 extern int_t symbfact_SubFree(Glu_freeable_t *);
+extern void    countnz_dist (const int_t, int_t *, 
+			     long long int *, long long int *,
+			     Glu_persist_t *, Glu_freeable_t *);
+extern long long int fixupL_dist (const int_t, const int_t *, Glu_persist_t *,
+				  Glu_freeable_t *);
+extern int_t   *TreePostorder_dist (int_t, int_t *);
+extern float   slamch_(const char *);
+extern double  dlamch_(const char *);
+extern void    *superlu_malloc_dist (size_t);
+extern void    superlu_free_dist (void*);
+extern int_t   *intMalloc_dist (int_t);
+extern int_t   *intCalloc_dist (int_t);
+extern int_t   mc64id_dist(int_t *);
+
+/* Auxiliary routines */
+extern double SuperLU_timer_ ();
+extern void   superlu_abort_and_exit_dist(char *);
+extern int_t  sp_ienv_dist (int_t);
+extern int    lsame_ (char *, char *);
+extern int    xerbla_ (char *, int *);
+extern void   ifill_dist (int_t *, int_t, int_t);
+extern void   super_stats_dist (int_t, int_t *);
+extern void   ScalePermstructInit(const int_t, const int_t, 
+				   ScalePermstruct_t *);
+extern void   ScalePermstructFree(ScalePermstruct_t *);
 extern void  get_diag_procs(int_t, Glu_persist_t *, gridinfo_t *, int_t *,
 			    int_t **, int_t **);
 extern int_t QuerySpace_dist(int_t, int_t, Glu_freeable_t *, mem_usage_t *);
@@ -596,7 +651,8 @@ extern void  pxerbla (char *, gridinfo_t *, int_t);
 extern void  PStatInit(SuperLUStat_t *);
 extern void  PStatFree(SuperLUStat_t *);
 extern void  PStatPrint(superlu_options_t *, SuperLUStat_t *, gridinfo_t *);
-
+extern void  log_memory(long long, SuperLUStat_t *);
+extern void  print_memorylog(SuperLUStat_t *, char *);
 
 /* Prototypes for parallel symbolic factorization */
 extern float symbfact_dist
@@ -624,8 +680,12 @@ extern int_t psymbfact_LUXpand_RL
  Pslu_freeable_t *, Llu_symbfact_t *, vtcsInfo_symbfact_t *, psymbfact_stat_t *);
 
 extern int_t psymbfact_prLUXpand
-(int_t,  int_t,
- MemType, Llu_symbfact_t *, psymbfact_stat_t *);
+(int_t,  int_t, int, Llu_symbfact_t *, psymbfact_stat_t *);
+
+#ifdef GPU_ACC   /* GPU related */
+extern void gemm_division_cpu_gpu (int *, int *, int *, int,
+				   int, int, int *, int);
+#endif
 
 /* Routines for debugging */
 extern void  print_panel_seg_dist(int_t, int_t, int_t, int_t, int_t *, int_t *);
@@ -633,7 +693,10 @@ extern void  check_repfnz_dist(int_t, int_t, int_t, int_t *);
 extern int_t CheckZeroDiagonal(int_t, int_t *, int_t *, int_t *);
 extern void  PrintDouble5(char *, int_t, double *);
 extern void  PrintInt10(char *, int_t, int_t *);
+extern void  PrintInt32(char *, int, int *);
 extern int   file_PrintInt10(FILE *, char *, int_t, int_t *);
+extern int   file_PrintInt32(FILE *, char *, int, int *);
+extern int   file_PrintLong10(FILE *, char *, int_t, int_t *);
 
 #ifdef __cplusplus
   }

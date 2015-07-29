@@ -195,11 +195,11 @@ FormFullA(int_t n, int_t *nonz, doublecomplex **nzval, int_t **rowind, int_t **c
     al_colptr = *colptr;
     al_val = *nzval;
 
-    if ( !(marker =(int *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
+    if ( !(marker = (int_t *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC fails for marker[]");
-    if ( !(t_colptr = (int *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
+    if ( !(t_colptr = (int_t *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC t_colptr[]");
-    if ( !(t_rowind = (int *) SUPERLU_MALLOC( *nonz * sizeof(int_t)) ) )
+    if ( !(t_rowind = (int_t *) SUPERLU_MALLOC( *nonz * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC fails for t_rowind[]");
     if ( !(t_val = (doublecomplex*) SUPERLU_MALLOC( *nonz * sizeof(doublecomplex)) ) )
 	ABORT("SUPERLU_MALLOC fails for t_val[]");
@@ -226,9 +226,9 @@ FormFullA(int_t n, int_t *nonz, doublecomplex **nzval, int_t **rowind, int_t **c
 	}
 
     new_nnz = *nonz * 2 - n;
-    if ( !(a_colptr = (int *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
+    if ( !(a_colptr = (int_t *) SUPERLU_MALLOC( (n+1) * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC a_colptr[]");
-    if ( !(a_rowind = (int *) SUPERLU_MALLOC( new_nnz * sizeof(int_t)) ) )
+    if ( !(a_rowind = (int_t *) SUPERLU_MALLOC( new_nnz * sizeof(int_t)) ) )
 	ABORT("SUPERLU_MALLOC fails for a_rowind[]");
     if ( !(a_val = (doublecomplex*) SUPERLU_MALLOC( new_nnz * sizeof(doublecomplex)) ) )
 	ABORT("SUPERLU_MALLOC fails for a_val[]");
@@ -240,7 +240,7 @@ FormFullA(int_t n, int_t *nonz, doublecomplex **nzval, int_t **rowind, int_t **c
 	if ( t_rowind[i] != j ) { /* not diagonal */
 	  a_rowind[k] = t_rowind[i];
 	  a_val[k] = t_val[i];
-#ifdef DEBUG
+#if (DEBUGlevel >= 2)
 	  if ( fabs(a_val[k]) < 4.047e-300 )
 	      printf("%5d: %e\n", k, a_val[k]);
 #endif
@@ -251,7 +251,7 @@ FormFullA(int_t n, int_t *nonz, doublecomplex **nzval, int_t **rowind, int_t **c
       for (i = al_colptr[j]; i < al_colptr[j+1]; ++i) {
 	a_rowind[k] = al_rowind[i];
 	a_val[k] = al_val[i];
-#ifdef DEBUG
+#if (DEBUGlevel >= 2)
 	if ( fabs(a_val[k]) < 4.047e-300 )
 	    printf("%5d: %e\n", k, a_val[k]);
 #endif
@@ -261,7 +261,7 @@ FormFullA(int_t n, int_t *nonz, doublecomplex **nzval, int_t **rowind, int_t **c
       a_colptr[j+1] = k;
     }
 
-    printf("FormFullA: new_nnz = %ld, k = %ld\n", (long long) new_nnz, (long long)k);
+    printf("FormFullA: new_nnz = " IFMT ", k = " IFMT "\n", new_nnz, k);
 
     SUPERLU_FREE(al_val);
     SUPERLU_FREE(al_rowind);
@@ -278,7 +278,7 @@ FormFullA(int_t n, int_t *nonz, doublecomplex **nzval, int_t **rowind, int_t **c
 }
 
 void
-zreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
+zreadrb_dist(int iam, FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
         doublecomplex **nzval, int_t **rowind, int_t **colptr)
 {
     register int_t i, numer_lines = 0;
@@ -293,7 +293,7 @@ zreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
     /* Line 2 */
     for (i=0; i<4; i++) {
         fscanf(fp, "%14c", buf); buf[14] = 0;
-        sscanf(buf, "%d", &tmp);
+        tmp = atoi(buf); /*sscanf(buf, "%d", &tmp);*/
         if (i == 3) numer_lines = tmp;
     }
     DumpLine(fp);
@@ -302,19 +302,19 @@ zreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
     fscanf(fp, "%3c", type);
     fscanf(fp, "%11c", buf); /* pad */
     type[3] = 0;
-#ifdef DEBUG
-    printf("Matrix type %s\n", type);
+#if (DEBUGlevel >= 1)
+    if ( !iam ) printf("Matrix type %s\n", type);
 #endif
 
-    fscanf(fp, "%14c", buf); sscanf(buf, "%d", nrow);
-    fscanf(fp, "%14c", buf); sscanf(buf, "%d", ncol);
-    fscanf(fp, "%14c", buf); sscanf(buf, "%d", nonz);
-    fscanf(fp, "%14c", buf); sscanf(buf, "%d", &tmp);
+    fscanf(fp, "%14c", buf); *nrow = atoi(buf);
+    fscanf(fp, "%14c", buf); *ncol = atoi(buf);
+    fscanf(fp, "%14c", buf); *nonz = atoi(buf);
+    fscanf(fp, "%14c", buf); tmp = atoi(buf);
 
     if (tmp != 0)
-        printf("This is not an assembled matrix!\n");
+        if ( !iam ) printf("This is not an assembled matrix!\n");
     if (*nrow != *ncol)
-        printf("Matrix is not square.\n");
+        if ( !iam ) printf("Matrix is not square.\n");
     DumpLine(fp);
 
     /* Allocate storage for the three arrays ( nzval, rowind, colptr ) */
@@ -329,11 +329,13 @@ zreadrb_dist(FILE *fp, int_t *nrow, int_t *ncol, int_t *nonz,
     ParseFloatFormat(buf, &valnum, &valsize);
     DumpLine(fp);
 
-#ifdef DEBUG
-    printf("%d rows, %d nonzeros\n", *nrow, *nonz);
-    printf("colnum %d, colsize %d\n", colnum, colsize);
-    printf("rownum %d, rowsize %d\n", rownum, rowsize);
-    printf("valnum %d, valsize %d\n", valnum, valsize);
+#if (DEBUGlevel >= 1)
+    if ( !iam ) {
+        printf(IFMT " rows, " IFMT " nonzeros\n", *nrow, *nonz);
+        printf("colnum " IFMT ", colsize " IFMT "\n", colnum, colsize);
+        printf("rownum " IFMT ", rowsize " IFMT "\n", rownum, rowsize);
+        printf("valnum " IFMT ", valsize " IFMT "\n", valnum, valsize);
+    }
 #endif
 
     ReadVector(fp, *ncol+1, *colptr, colnum, colsize);

@@ -61,7 +61,7 @@ const char* cublasGetErrorString(cublasStatus_t status)
     return "unknown error";
 }
 
-
+inline
 cudaError_t checkCuda(cudaError_t result)
 {
 #if defined(DEBUG) || defined(_DEBUG)

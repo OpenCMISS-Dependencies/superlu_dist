@@ -49,4 +49,4 @@ command in place of "aprun".
    % aprun -n <np> pzdrive -r <process row> -c <process columns> cg20.cua
 
 4. To run the complex examples pzdrive4 and pzdrive4_ABglobal, you may type:
-   % aprun -n 10 pzdrive4 cg20.rua
+   % aprun -n 10 pzdrive4 cg20.cua

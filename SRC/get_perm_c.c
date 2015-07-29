@@ -27,7 +27,7 @@ get_metis(
     /*#define METISOPTIONS 8*/
 #define METISOPTIONS 40
     int_t metis_options[METISOPTIONS];
-    int_t ct, i, j, nm, numflag = 0; /* C-Style ordering */
+    int_t i, nm, numflag = 0; /* C-Style ordering */
     int_t *perm, *iperm;
     int_t *b_colptr_int, *b_rowind_int;
     extern int check_perm_dist(char *what, int_t n, int_t *perm);
@@ -201,7 +201,7 @@ getata_dist(
 	ABORT("SUPERLU_MALLOC fails for ata_colptr[]");
     if ( *atanz ) {
 	if ( !(*ata_rowind = (int_t*)SUPERLU_MALLOC(*atanz*sizeof(int_t)) ) ) {
-	    fprintf(stderr, ".. atanz = %ld\n", *atanz);
+	    fprintf(stderr, ".. atanz = %ld\n", (long long) *atanz);
 	    ABORT("SUPERLU_MALLOC fails for ata_rowind[]");
 	}
     }
@@ -424,7 +424,7 @@ get_perm_c_dist(int_t pnum, int_t ispec, SuperMatrix *A, int_t *perm_c)
     double t, SuperLU_timer_();
 
 #if ( DEBUGlevel>=1 )
-    CHECK_MALLOC(pnum, "Enter get_perm_c_dist()");
+    CHECK_MALLOC((int)pnum, "Enter get_perm_c_dist()");
 #endif
 
     m = A->nrow;
@@ -529,6 +529,6 @@ get_perm_c_dist(int_t pnum, int_t ispec, SuperMatrix *A, int_t *perm_c)
     SUPERLU_FREE(b_colptr);
 
 #if ( DEBUGlevel>=1 )
-    CHECK_MALLOC(pnum, "Exit get_perm_c_dist()");
+    CHECK_MALLOC((int) pnum, "Exit get_perm_c_dist()");
 #endif
 } /* get_perm_c_dist */

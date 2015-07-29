@@ -215,7 +215,8 @@ check_perm_dist(char *what, int_t n, int_t *perm)
 
     for (i = 0; i < n; ++i) {
 	if ( perm[i] >= n || marker[perm[i]] == 1 ) {
-	    printf("%s: Not a valid PERM[%d] = %d\n", what, i, perm[i]);
+	    printf("%s: Not a valid PERM[" IFMT "] = " IFMT "\n", 
+		   what, i, perm[i]);
 	    ABORT("check_perm_dist");
 	} else {
 	    marker[perm[i]] = 1;

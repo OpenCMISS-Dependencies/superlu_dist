@@ -4,9 +4,10 @@
  * \brief Driver program for pdgssvx_ABglobal example
  *
  * <pre>
- * -- Distributed SuperLU routine (version 1.0) --
+ * -- Distributed SuperLU routine (version 4.1) --
  * Lawrence Berkeley National Lab, Univ. of California Berkeley.
  * September 1, 1999
+ * April 5, 2015
  * </pre>
  */
 
@@ -53,6 +54,10 @@ int main(int argc, char *argv[])
     FILE *fp, *fopen();
     extern int cpp_defs();
 
+    /* prototypes */
+    extern void LUstructInit(const int_t, LUstruct_t *);
+    extern void LUstructFree(LUstruct_t *);
+    extern void Destroy_LU(int_t, gridinfo_t *, LUstruct_t *);
 
     nprow = 1;  /* Default process rows.      */
     npcol = 1;  /* Default process columns.   */
@@ -113,8 +118,9 @@ int main(int argc, char *argv[])
 	/* Read the matrix stored on disk in Harwell-Boeing format. */
 	dreadhb_dist(iam, fp, &m, &n, &nnz, &a, &asub, &xa);
 	
+	printf("Input matrix file: %s\n", *cpp);
 	printf("\tDimension\t%dx%d\t # nonzeros %d\n", m, n, nnz);
-	printf("\tProcess grid\t%d X %d\n", grid.nprow, grid.npcol);
+	printf("\tProcess grid\t%d X %d\n", (int) grid.nprow, (int) grid.npcol);
 
 	/* Broadcast matrix A to the other PEs. */
 	MPI_Bcast( &m,   1,   mpi_int_t,  0, grid.comm );
@@ -182,9 +188,14 @@ int main(int argc, char *argv[])
      */
     set_default_options_dist(&options);
 
+    if (!iam) {
+	print_sp_ienv_dist(&options);
+	print_options_dist(&options);
+    }
+
     /* Initialize ScalePermstruct and LUstruct. */
     ScalePermstructInit(m, n, &ScalePermstruct);
-    LUstructInit(m, n, &LUstruct);
+    LUstructInit(n, &LUstruct);
 
     /* Initialize the statistics variables. */
     PStatInit(&stat);

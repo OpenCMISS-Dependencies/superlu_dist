@@ -16,7 +16,8 @@
 typedef enum {NO, YES}                                          yes_no_t;
 typedef enum {DOFACT, SamePattern, SamePattern_SameRowPerm, FACTORED} fact_t;
 typedef enum {NOROWPERM, LargeDiag, MY_PERMR}                   rowperm_t;
-typedef enum {NATURAL, MMD_ATA, MMD_AT_PLUS_A, COLAMD, METIS_AT_PLUS_A, PARMETIS, ZOLTAN, MY_PERMC}      colperm_t;
+typedef enum {NATURAL, MMD_ATA, MMD_AT_PLUS_A, COLAMD,
+	      METIS_AT_PLUS_A, PARMETIS, ZOLTAN, MY_PERMC}      colperm_t;
 typedef enum {NOTRANS, TRANS, CONJ}                             trans_t;
 typedef enum {NOEQUIL, ROW, COL, BOTH}                          DiagScale_t;
 typedef enum {NOREFINE, SLU_SINGLE=1, SLU_DOUBLE, SLU_EXTRA}    IterRefine_t;

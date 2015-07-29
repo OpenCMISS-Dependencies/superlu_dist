@@ -38,13 +38,14 @@
 
 #define CHECK_MALLOC(pnum, where) {                 \
     extern long int superlu_malloc_total;        \
-    printf("(%d) %s: superlu_malloc_total (MB) %.2f\n", \
+    printf("(%d) %s: superlu_malloc_total (MB) %.6f\n", \
 	   pnum, where, superlu_malloc_total*1e-6); \
 }
 
 #define SUPERLU_MAX(x, y) 	( (x) > (y) ? (x) : (y) )
 #define SUPERLU_MIN(x, y) 	( (x) < (y) ? (x) : (y) )
 
+    
 /* 
  * Constants 
  */
@@ -75,6 +76,10 @@ typedef struct {
     int     TinyPivots;   /* number of tiny pivots */
     int     RefineSteps;  /* number of iterative refinement steps */
     int     num_look_aheads; /* number of look ahead */
+    /*-- new --*/
+    float   current_buffer; /* bytes allocated for buffer in numerical factorization */
+    float   peak_buffer;    /* monitor the peak buffer size (bytes) */
+    float   gpu_buffer;     /* monitor the buffer allocated on GPU (bytes) */
 } SuperLUStat_t;
 
 /* Headers for 2 types of dynamatically managed memory */

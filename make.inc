@@ -17,26 +17,32 @@
 #
 #  The machine (platform) identifier to append to the library names
 #
-PLAT		= _xe6
+## edison at NERSC
+PLAT		= _xc30
 
 #
 #  The name of the libraries to be created/linked to
 #
-DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST_3.3
-DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_3.3.a
+DSuperLUroot 	= ${HOME}/Release_Codes/SuperLU_DIST_4.1
+DSUPERLULIB   	= $(DSuperLUroot)/lib/libsuperlu_dist_4.1.a
 #
 BLASDEF	     	= -DUSE_VENDOR_BLAS
 BLASLIB	        =
 #
+############################################################################
 ## parmetis 4.x.x, 32-bit integer
-METISLIB    	= -L${HOME}/Hopper/lib/parmetis-4.0.2/build/Linux-x86_64/libmetis -lmetis
-PARMETISLIB  	= -L${HOME}/Hopper/lib/parmetis-4.0.2/build/Linux-x86_64/libparmetis -lparmetis
+ PARMETIS_DIR	:= ${HOME}/Edison/lib/parmetis-4.0.3
 ## parmetis 4.x.x, 64-bit integer
-# METISLIB    	= -L${HOME}/Hopper/lib/parmetis-4.0.2-64bit/build/Linux-x86_64/libmetis -lmetis
-# PARMETISLIB  	= -L${HOME}/Hopper/lib/parmetis-4.0.2-64bit/build/Linux-x86_64/libparmetis -lparmetis
+# PARMETIS_DIR	:= ${HOME}/Edison/lib/parmetis-4.0.3_64
+
+METISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libmetis -lmetis
+PARMETISLIB := -L${PARMETIS_DIR}/build/Linux-x86_64/libparmetis -lparmetis
+I_PARMETIS := -I${PARMETIS_DIR}/include -I${PARMETIS_DIR}/metis/include
+############################################################################
 
 # Define the required Fortran libraries, if you use C compiler to link
-FLIBS	 	= -lpgf90 -lpgf90_rpm1
+# FLIBS	 	= -lpgf90 -lpgf90_rpm1  ## for PGI compiler
+#FLIBS	 	= -lifport -lifcore     ## for Intel compiler
 
 # Define all the libraries
 LIBS	     	= $(DSUPERLULIB) $(BLASLIB) $(PARMETISLIB) $(METISLIB) $(FLIBS)
@@ -53,19 +59,22 @@ RANLIB       	= ranlib
 # C compiler setup
 CC           	= cc
 # CFLAGS should be set to be the C flags that include optimization
-CFLAGS          = -fast -Mipa=fast,safe \
-		-DDEBUGlevel=0 -DPRNTlevel=1 -DPROFlevel=0 \
-#		-D_LONGINT
-#
+CFLAGS          = -fast -m64 -std=c99 -Wall -openmp \
+		$(I_PARMETIS) -DDEBUGlevel=0 -DPRNTlevel=0 -DPROFlevel=0 \
+# uncomment the following to use 64-bit integer
+# CFLAGS 		+= -D_LONGINT
+
 # NOOPTS should be set to be the C flags that turn off any optimization
 NOOPTS		= -O0
 ############################################################################
 # FORTRAN compiler setup
 FORTRAN         = ftn
-F90FLAGS	= -fast -Mipa=fast,safe
+F90FLAGS	= -fast #-Mipa=fast,safe
+# uncomment the following to use 64-bit integer
+# F90FLAGS	+= -i8
 ############################################################################
 LOADER	        = $(CC)
-LOADOPTS	= -fast
+LOADOPTS	= -openmp
 ############################################################################
 #  C preprocessor defs for compilation (-DNoChange, -DAdd_, or -DUpCase)
 #

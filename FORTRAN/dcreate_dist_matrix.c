@@ -194,6 +194,3 @@ int dcreate_dist_matrix(SuperMatrix *A, int_t m, int_t n, int_t nnz,
 }
 
 
-
-
-

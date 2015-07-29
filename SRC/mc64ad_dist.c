@@ -349,8 +349,8 @@ static int_t c__2 = 2;
 	info[1] = -1;
 	info[2] = *job;
 	if (icntl[1] >= 0) {
-	    printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-		   " because JOB = %d\n",  info[1], *job);
+	    printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT 
+		   " because JOB = " IFMT "\n",  info[1], *job);
 	}
 	goto L99;
     }
@@ -359,8 +359,8 @@ static int_t c__2 = 2;
 	info[1] = -2;
 	info[2] = *n;
 	if (icntl[1] >= 0) {
-	    printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-		   " because N = %d\n", info[1], *job);
+	    printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT 
+		   " because N = " IFMT "\n", info[1], *job);
 	}
 	goto L99;
     }
@@ -369,8 +369,8 @@ static int_t c__2 = 2;
 	info[1] = -3;
 	info[2] = *ne;
 	if (icntl[1] >= 0) {
-	    printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-		   " because NE = %d\n", info[1], *job);
+	    printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT
+		   " because NE = " IFMT "\n", info[1], *job);
 	}
 	goto L99;
     }
@@ -394,8 +394,8 @@ static int_t c__2 = 2;
 	info[1] = -4;
 	info[2] = k;
 	if (icntl[1] >= 0) {
-	    printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-		   " LIW too small, must be at least %8d\n", info[1], k);
+	    printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT 
+		   " LIW too small, must be at least " IFMT "\n", info[1], k);
 	}
 	goto L99;
     }
@@ -418,8 +418,8 @@ static int_t c__2 = 2;
 	    info[1] = -5;
 	    info[2] = k;
 	    if (icntl[1] >= 0) {
-		printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-		       " LDW too small, must be at least %8d\n", info[1], k);
+		printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT 
+		       " LDW too small, must be at least " IFMT "\n", info[1], k);
 	    }
 	    goto L99;
 	}
@@ -441,9 +441,10 @@ static int_t c__2 = 2;
 		    info[1] = -6;
 		    info[2] = j;
 		    if (icntl[1] >= 0) {
-			printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-			       " Column %8d" 
-			       " contains an entry with invalid row index %8d\n", info[1], j, i__);
+			printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT 
+			       " Column " IFMT 
+			       " contains an entry with invalid row index " IFMT "\n",
+			       info[1], j, i__);
 		    }
 		    goto L99;
 		}
@@ -452,9 +453,10 @@ static int_t c__2 = 2;
 		    info[1] = -7;
 		    info[2] = j;
 		    if (icntl[1] >= 0) {
-			printf(" ****** Error in MC64A/AD. INFO(1) = %2d"
-			       "        Column %8d"
-			       " contains two or more entries with row index %8d\n", info[1], j, i__);
+			printf(" ****** Error in MC64A/AD. INFO(1) = " IFMT 
+			       "        Column " IFMT
+			       " contains two or more entries with row index " IFMT "\n",
+			       info[1], j, i__);
 		    }
 		    goto L99;
 		} else {
@@ -467,16 +469,16 @@ static int_t c__2 = 2;
     }
 /* Print diagnostics on input */
     if (icntl[3] >= 0) {
-	printf("  ****** Input parameters for MC64A/AD: JOB = %8d,"
-	       " N = %d, NE = %8d\n", *job, *n, *ne);
+	printf("  ****** Input parameters for MC64A/AD: JOB = " IFMT ","
+	       " N = " IFMT ", NE = " IFMT "\n", *job, *n, *ne);
 	printf(" IP(1:N+1)   = ");
 	for (j=1; j<=(*n+1); ++j) {
-	    printf("%8d", ip[j]);
+	    printf(IFMT, ip[j]);
 	    if (j%8 == 0) printf("\n");
 	}
 	printf("\n IRN(1:NE) = ");
 	for (j=1; j<=(*ne); ++j) {
-	    printf("%8d", irn[j]);
+	    printf(IFMT, irn[j]);
 	    if (j%8 == 0) printf("\n");
 	}
 	printf("\n");
@@ -624,25 +626,25 @@ L90:
 /* Matrix is structurally singular, return with warning */
 	info[1] = 1;
 	if (icntl[2] >= 0) {
-	    printf(" ****** Warning from MC64A/AD. INFO(1) = %2d"
+	    printf(" ****** Warning from MC64A/AD. INFO(1) = " IFMT
 		   " The matrix is structurally singular.\n",  info[1]);
 	}
     }
     if (info[1] == 2) {
 /* Scaling factors are large, return with warning */
 	if (icntl[2] >= 0) {
-	    printf(" ****** Warning from MC64A/AD. INFO(1) = %2d\n"
+	    printf(" ****** Warning from MC64A/AD. INFO(1) = " IFMT "\n"
 		   "        Some scaling factors may be too large.\n", info[1]);
 	}
     }
 /* Print diagnostics on output */
     if (icntl[3] >= 0) {
-	printf(" ****** Output parameters for MC64A/AD: INFO(1:2)  = %8d%8d\n",
+	printf(" ****** Output parameters for MC64A/AD: INFO(1:2)  = " IFMT IFMT "\n",
 	       info[1], info[2]);
-	printf(" NUM        = %8d", *num);
+	printf(" NUM        = " IFMT, *num);
 	printf(" CPERM(1:N) = ");
 	for (j=1; j<=*n; ++j) {
-	    printf("%8d", cperm[j]);
+	    printf(IFMT, cperm[j]);
 	    if (j%8 == 0) printf("\n");
 	}
 	if (*job == 5) {
@@ -688,9 +690,9 @@ L99:
     double dnew;
     int_t jord, qlen, idum, jdum;
     double rinf;
-    extern /* Subroutine */ int_t mc64dd_(int_t *, int_t *, int_t *, 
-	    double *, int_t *, int_t *), mc64ed_(int_t *, int_t *,
-	     int_t *, double *, int_t *, int_t *), mc64fd_(int_t *
+    extern /* Subroutine */ int_t mc64dd_dist(int_t *, int_t *, int_t *, 
+	    double *, int_t *, int_t *), mc64ed_dist(int_t *, int_t *,
+	     int_t *, double *, int_t *, int_t *), mc64fd_dist(int_t *
 	    , int_t *, int_t *, int_t *, double *, int_t *, int_t *);
 
 
@@ -905,7 +907,7 @@ L95:
 /* Add row I to Q, and push it */
 		    ++qlen;
 		    l[i__] = qlen;
-		    mc64dd_(&i__, n, &q[1], &d__[1], &l[1], &c__1);
+		    mc64dd_dist(&i__, n, &q[1], &d__[1], &l[1], &c__1);
 		}
 		jj = iperm[i__];
 		pr[jj] = j;
@@ -927,7 +929,7 @@ L115:
 		bv = d__[i__];
 		i__3 = *n;
 		for (idum = 1; idum <= i__3; ++idum) {
-		    mc64ed_(&qlen, n, &q[1], &d__[1], &l[1], &c__1);
+		    mc64ed_dist(&qlen, n, &q[1], &d__[1], &l[1], &c__1);
 		    l[i__] = 0;
 		    --low;
 		    q[low] = i__;
@@ -980,7 +982,7 @@ L153:
 		    if (dnew >= bv) {
 /* Delete row I from Q (if necessary); add row I to Q2 */
 			if (di != -1.) {
-			    mc64fd_(&l[i__], &qlen, n, &q[1], &d__[1], &l[1], 
+			    mc64fd_dist(&l[i__], &qlen, n, &q[1], &d__[1], &l[1], 
 				    &c__1);
 			}
 			l[i__] = 0;
@@ -992,7 +994,7 @@ L153:
 			    ++qlen;
 			    l[i__] = qlen;
 			}
-			mc64dd_(&i__, n, &q[1], &d__[1], &l[1], &c__1);
+			mc64dd_dist(&i__, n, &q[1], &d__[1], &l[1], &c__1);
 		    }
 /* Update tree */
 		    jj = iperm[i__];
@@ -1092,7 +1094,7 @@ L1000:
 } /* mc64bd_ */
 
 /* ********************************************************************** */
-/* Subroutine */ int_t mc64dd_(int_t *i__, int_t *n, int_t *q, double 
+/* Subroutine */ int_t mc64dd_dist(int_t *i__, int_t *n, int_t *q, double 
 	*d__, int_t *l, int_t *iway)
 {
     /* System generated locals */
@@ -1167,10 +1169,10 @@ L20:
     q[pos] = *i__;
     l[*i__] = pos;
     return 0;
-} /* mc64dd_ */
+} /* mc64dd_dist */
 
 /* ********************************************************************** */
-/* Subroutine */ int_t mc64ed_(int_t *qlen, int_t *n, int_t *q, 
+/* Subroutine */ int_t mc64ed_dist(int_t *qlen, int_t *n, int_t *q, 
 	double *d__, int_t *l, int_t *iway)
 {
     /* System generated locals */
@@ -1262,10 +1264,10 @@ L20:
     q[pos] = i__;
     l[i__] = pos;
     return 0;
-} /* mc64ed_ */
+} /* mc64ed_dist */
 
 /* ********************************************************************** */
-/* Subroutine */ int_t mc64fd_(int_t *pos0, int_t *qlen, int_t *n, 
+/* Subroutine */ int_t mc64fd_dist(int_t *pos0, int_t *qlen, int_t *n, 
 	int_t *q, double *d__, int_t *l, int_t *iway)
 {
     /* System generated locals */
@@ -1400,7 +1402,7 @@ L40:
     q[pos] = i__;
     l[i__] = pos;
     return 0;
-} /* mc64fd_ */
+} /* mc64fd_dist */
 
 /* ********************************************************************** */
 /* Subroutine */ int_t mc64rd_dist(int_t *n, int_t *ne, int_t *ip,
@@ -2186,9 +2188,9 @@ L101:
     double dmin__, dnew;
     int_t jord, qlen, jdum;
     double rinf;
-    extern /* Subroutine */ int_t mc64dd_(int_t *, int_t *, int_t *, 
-	    double *, int_t *, int_t *), mc64ed_(int_t *, int_t *,
-	     int_t *, double *, int_t *, int_t *), mc64fd_(int_t *
+    extern /* Subroutine */ int_t mc64dd_dist(int_t *, int_t *, int_t *, 
+	    double *, int_t *, int_t *), mc64ed_dist(int_t *, int_t *,
+	     int_t *, double *, int_t *, int_t *), mc64fd_dist(int_t *
 	    , int_t *, int_t *, int_t *, double *, int_t *, 
 	    int_t *);
 
@@ -2445,7 +2447,7 @@ L115:
 	    } else {
 		++qlen;
 		l[i__] = qlen;
-		mc64dd_(&i__, n, &q[1], &d__[1], &l[1], &c__2);
+		mc64dd_dist(&i__, n, &q[1], &d__[1], &l[1], &c__2);
 	    }
 /* Update tree */
 	    jj = iperm[i__];
@@ -2467,7 +2469,7 @@ L120:
 		}
 		dmin__ = d__[i__];
 L152:
-		mc64ed_(&qlen, n, &q[1], &d__[1], &l[1], &c__2);
+		mc64ed_dist(&qlen, n, &q[1], &d__[1], &l[1], &c__2);
 		--low;
 		q[low] = i__;
 		l[i__] = low;
@@ -2521,7 +2523,7 @@ L153:
 		    d__[i__] = dnew;
 		    if (dnew <= dmin__) {
 			if (l[i__] != 0) {
-			    mc64fd_(&l[i__], &qlen, n, &q[1], &d__[1], &l[1], 
+			    mc64fd_dist(&l[i__], &qlen, n, &q[1], &d__[1], &l[1], 
 				    &c__2);
 			}
 			--low;
@@ -2532,7 +2534,7 @@ L153:
 			    ++qlen;
 			    l[i__] = qlen;
 			}
-			mc64dd_(&i__, n, &q[1], &d__[1], &l[1], &c__2);
+			mc64dd_dist(&i__, n, &q[1], &d__[1], &l[1], &c__2);
 		    }
 /* Update tree */
 		    jj = iperm[i__];
