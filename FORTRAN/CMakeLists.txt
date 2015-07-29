@@ -15,17 +15,18 @@ if(BUILD_PRECISION MATCHES [d])
         dcreate_dist_matrix.c superlu_c2f_dwrap.c
         $<TARGET_OBJECTS:fmod>)
     target_link_libraries(f_pddrive superlu_dist)
+    add_test(f_pddrive ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 4 f_pddrive)
 
     add_executable(f_5x5 f_5x5.f90 sp_ienv.c
         dcreate_dist_matrix.c superlu_c2f_dwrap.c
         $<TARGET_OBJECTS:fmod>)
     target_link_libraries(f_5x5 superlu_dist)
-    #ADDTEST(f77_main f77_main -h g20.rua)
+    add_test(f_5x5 ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 2 f_5x5)
 endif()
 if(BUILD_PRECISION MATCHES [z])
     add_executable(f_pzdrive zhbcode1.f90 f_pzdrive.f90
         zcreate_dist_matrix.c superlu_c2f_zwrap.c
         $<TARGET_OBJECTS:fmod>)
     target_link_libraries(f_pzdrive superlu_dist)
-    #ADDTEST(f77_main f77_main -h cg20.rua)
+    add_test(f_pzdrive ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} 4 f_pzdrive)
 endif()

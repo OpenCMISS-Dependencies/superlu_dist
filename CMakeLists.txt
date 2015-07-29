@@ -25,9 +25,9 @@ endif()
 if (WIN32)
     include_directories(${MPI_C_INCLUDE_PATH})
 endif()
-SET(CMAKE_C_FLAGS "-std=c99 -Wno-format -Wno-error=format-security")
-SET(CMAKE_C_FLAGS_RELEASE "-O3") # not recognized: -w2 -mkl
-SET(CMAKE_C_FLAGS_DEBUG "-O0 -Wall")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wno-format -Wno-error=format-security")
+SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3") # not recognized: -w2 -mkl
+SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall")
 
 if (WITH_OPENMP)
   find_package(OpenMP)
@@ -43,12 +43,11 @@ endif()
 # collecting source file defs in subdirectory
 add_subdirectory(SRC)
 if (USE_PARMETIS OR USE_METIS)
-    add_subdirectory(FORTRAN)
-    
     if (BUILD_TESTS)
         enable_testing()
         add_subdirectory(EXAMPLE)
     endif()
+    add_subdirectory(FORTRAN)
 else()
     message(WARNING "USE_PARMETIS and USE_METIS are disabled. Not building examples as the default option is metis ordering.")
 endif()

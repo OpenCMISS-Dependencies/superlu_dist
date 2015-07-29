@@ -44,7 +44,7 @@ SET(COMPDEFS
         USE_VENDOR_BLAS # using ocms blas
         Add_  # no change for fortran linking
         DEBUGlevel=0 PRNTlevel=1 PROFlevel=0 # misc
-        _LONGINT # build type
+        #_LONGINT # build type
 )
 add_library(aux OBJECT ${ALLAUX} ${LAAUX})
 target_include_directories(aux PRIVATE
