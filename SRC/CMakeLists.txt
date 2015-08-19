@@ -46,14 +46,14 @@ SET(COMPDEFS
         DEBUGlevel=0 PRNTlevel=1 PROFlevel=0 # misc
         #_LONGINT # This flag caused segfaults
 )
-add_library(aux OBJECT ${ALLAUX} ${LAAUX})
-target_include_directories(aux PRIVATE
+add_library(auxiliary OBJECT ${ALLAUX} ${LAAUX})
+target_include_directories(auxiliary PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
     )
-SET(OBJS $<TARGET_OBJECTS:aux>)
+SET(OBJS $<TARGET_OBJECTS:auxiliary>)
 if(BUILD_PRECISION MATCHES [d])
     add_library(slud_d OBJECT ${SRC_d})
     target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
