@@ -25,7 +25,7 @@ SET(dPLUSRC dldperm.c ddistribute.c pdgstrf.c pdgstrs_Bglobal.c
 	  pdgsequ.c pdlaqgs.c pdgsrfs.c pdgsmv.c pdgstrs_lsum.c
 	  pdsymbfact_distdata.c dreadhb.c dreadrb.c dreadtriple.c
 	  # New in 4.1
-	  dldperm_dist.c dreadMM.c pdgstrf2.c) 
+	  dldperm_dist.c dreadMM.c pdgstrf2.c)#
 
 #
 # Routines for double complex parallel SuperLU

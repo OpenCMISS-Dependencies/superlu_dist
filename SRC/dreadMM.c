@@ -213,8 +213,8 @@ dreadMM(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 
 }
 
-
-void dreadrhs(int m, double *b)
+// Double definition - commented out
+/*void dreadrhs(int m, double *b)
 {
     FILE *fp, *fopen();
     int i;
@@ -227,7 +227,7 @@ void dreadrhs(int m, double *b)
       fscanf(fp, "%lf\n", &b[i]);
       /*fscanf(fp, "%d%lf\n", &j, &b[i]);*/
     /*        readpair_(j, &b[i]);*/
-    fclose(fp);
-}
+/*    fclose(fp);
+}*/
 
 

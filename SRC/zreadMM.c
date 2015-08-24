@@ -212,7 +212,8 @@ zreadMM(FILE *fp, int_t *m, int_t *n, int_t *nonz,
 
 }
 
-
+/*
+ * Double defintion - commented out
 void zreadrhs(int m, doublecomplex *b)
 {
     FILE *fp, *fopen();
@@ -225,6 +226,6 @@ void zreadrhs(int m, doublecomplex *b)
     for (i = 0; i < m; ++i)
       fscanf(fp, "%lf%lf\n", &b[i].r, &b[i].i);
     fclose(fp);
-}
+}*/
 
 

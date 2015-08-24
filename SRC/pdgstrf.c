@@ -159,68 +159,6 @@ superlu_sort_perm (const void *arg1, const void *arg2)
 #endif
 
 
-int get_thread_per_process()
-{   
-    char* ttemp; 
-    ttemp = getenv("THREAD_PER_PROCESS");
-
-    if(ttemp) return atoi(ttemp);
-    else return 1;
-}
-
-int
-get_mic_offload ()
-{
-    char *ttemp;
-    ttemp = getenv ("SUPERLU_MIC_OFFLOAD");
-
-    if (ttemp)
-        return atoi (ttemp);
-    else
-        return 0;
-}
-
-int_t
-get_max_buffer_size ()
-{
-    char *ttemp;
-    ttemp = getenv ("MAX_BUFFER_SIZE");
-    if (ttemp)
-        return atoi (ttemp);
-    else
-        return 5000000;
-}
-
-int_t
-get_cublas_nb ()
-{
-    char *ttemp;
-    ttemp = getenv ("CUBLAS_NB");
-    if (ttemp)
-        return atoi (ttemp);
-    else
-        return 64;
-}
-
-int_t
-get_num_cuda_streams ()
-{
-    char *ttemp;
-    ttemp = getenv ("NUM_CUDA_STREAMS");
-    if (ttemp)
-        return atoi (ttemp);
-    else
-        return 8;
-}
-
-/*int omp_get_num_threads (void);
-  int omp_get_thread_num (void);*/
-
-int AssignMic(int my_rank)
-{
-    return (my_rank+1)%2;
-}
-
 /************************************************************************/
 
 #include "dscatter.c"
