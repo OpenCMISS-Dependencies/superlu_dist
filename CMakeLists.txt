@@ -10,7 +10,7 @@ option(WITH_OPENMP "${PROJECT_NAME} - Use OpenMP" ON)
 set(FORTRAN_MANGLING "Add_" CACHE STRING "${PROJECT_NAME} - Fortran mangling scheme")
 
 # SuperLU requires the C99 standard
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 # CMake somehow doesnt handle the case for intel compilers yet
 if (CMAKE_C_COMPILER_ID MATCHES Intel)
