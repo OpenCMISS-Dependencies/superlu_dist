@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.3)
 project (SUPERLU_DIST VERSION 4.1 LANGUAGES C Fortran)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
