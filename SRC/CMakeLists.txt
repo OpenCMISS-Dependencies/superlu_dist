@@ -47,6 +47,7 @@ SET(COMPDEFS
         #_LONGINT # This flag caused segfaults
 )
 add_library(auxiliary OBJECT ${ALLAUX} ${LAAUX})
+target_compile_definitions(auxiliary PRIVATE ${COMPDEFS})
 target_include_directories(auxiliary PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
          $<$<BOOL:${USE_PARMETIS}>:
@@ -78,10 +79,11 @@ if(BUILD_PRECISION MATCHES [z])
 endif()
 
 add_library(superlu_dist ${OBJS})
-
+target_compile_definitions(superlu_dist PUBLIC $<BUILD_INTERFACE:${COMPDEFS}>)
 target_link_libraries(superlu_dist 
-    PUBLIC blas
-    ${MPI_C_LIBRARIES} ${MPI_Fortran_LIBRARIES}
+    PUBLIC $<BUILD_INTERFACE:blas>
+    $<BUILD_INTERFACE:${MPI_C_LIBRARIES}>
+    $<BUILD_INTERFACE:${MPI_Fortran_LIBRARIES}>
 )
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
