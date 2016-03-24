@@ -230,8 +230,8 @@ float symbfact_dist
  *  combined left-looking, right-looking approach. 
  * </pre>
  */
-  NRformat_loc *Astore;
-  int iam, szSep, fstP, lstP, npNode, nlvls, lvl, p, iSep, jSep;
+//  NRformat_loc *Astore;
+  int iam, szSep, fstP, lstP, npNode, nlvls, lvl, iSep, jSep;
   int iinfo; /* return code */
   int_t m, n;
   int_t nextl, nextu, neltsZr, neltsTotal, nsuper_loc, szLGr, szUGr;
@@ -503,10 +503,10 @@ float symbfact_dist
       szsn = 1;
       if (INT_MAX - nnzL <= Llu_symbfact.xlsub[fstVtx_lid + 1] - 
 	  Llu_symbfact.xlsub[fstVtx_lid])
-	printf ("PE[%d] ERR nnzL %ld\n", iam, nnzL); 
+	printf ("PE[%d] ERR nnzL %lld\n", iam, nnzL); 
       if (INT_MAX - nnzU <= Llu_symbfact.xusub[fstVtx_lid + 1] - 
 	  Llu_symbfact.xusub[fstVtx_lid])
-	printf ("PE[%d] ERR nnzU %ld\n", iam, nnzU);
+	printf ("PE[%d] ERR nnzU %lld\n", iam, nnzU);
       
       j = Llu_symbfact.xlsub[fstVtx_lid + 1] - Llu_symbfact.xlsub[fstVtx_lid];
       k = Llu_symbfact.xusub[fstVtx_lid + 1] - Llu_symbfact.xusub[fstVtx_lid];
@@ -600,7 +600,7 @@ float symbfact_dist
     stat_msgs_l[0] = (float) PS.maxsz_msgSnd;
     stat_msgs_l[1] = (float) PS.maxsz_msgSnd;
     if (PS.maxsz_msgSnd < PS.maxsz_msgCol)
-      stat_msgs_l[1] = PS.maxsz_msgCol;
+      stat_msgs_l[1] = (float)PS.maxsz_msgCol;
     stat_msgs_l[2] = PS.no_shmSnd + PS.no_msgsSnd + 
       PS.no_shmRcvd + PS.no_msgsRcvd;
     stat_msgs_l[3] = stat_msgs_l[2] + PS.no_msgsCol;
@@ -621,21 +621,21 @@ float symbfact_dist
       nnzL   = (long long) stat_glob[0]; nnzU  = (long long) stat_glob[1];
       nsuper = (int_t) stat_glob[2];
       szLGr  = (int_t) stat_glob[3]; szUGr = (int_t) stat_glob[4];
-      printf("\tMax szBlk          %ld\n", (long long) VInfo.maxSzBlk);
+      printf("\tMax szBlk          %lld\n", (long long) VInfo.maxSzBlk);
 #if ( PRNTlevel>=2 )
       printf("\t relax_gen %.2f, relax_curSep %.2f, relax_seps %.2f\n",
 	     PS.relax_gen, PS.relax_curSep, PS.relax_seps);
 #endif
-      printf("\tParameters: fill mem %ld fill pelt %ld\n",
+      printf("\tParameters: fill mem %lld fill pelt %lld\n",
 	     (long long) sp_ienv_dist(6), (long long) PS.fill_par);
-      printf("\tNonzeros in L       %ld\n", nnzL);
-      printf("\tNonzeros in U       %ld\n", nnzU);
+      printf("\tNonzeros in L       %lld\n", nnzL);
+      printf("\tNonzeros in U       %lld\n", nnzU);
       nnzLU = nnzL + nnzU;
-      printf("\tnonzeros in L+U-I   %ld\n", nnzLU);
-      printf("\tNo of supers   %ld\n", (long long) nsuper);
-      printf("\tSize of G(L)   %ld\n", (long long) szLGr);
-      printf("\tSize of G(U)   %ld\n", (long long) szUGr);
-      printf("\tSize of G(L+U) %ld\n", (long long) szLGr+szUGr);
+      printf("\tnonzeros in L+U-I   %lld\n", nnzLU);
+      printf("\tNo of supers   %lld\n", (long long) nsuper);
+      printf("\tSize of G(L)   %lld\n", (long long) szLGr);
+      printf("\tSize of G(U)   %lld\n", (long long) szUGr);
+      printf("\tSize of G(L+U) %lld\n", (long long) szLGr+szUGr);
 
       printf("\tParSYMBfact (MB)      :\tL\\U MAX %.2f\tAVG %.2f\n",
 	     mem_glob[0]*1e-6, 
@@ -1231,12 +1231,12 @@ symbfact_distributeMatrix
  * Ainf : inferior part of A, including diagonal.
  * Asup : superior part of A.
  */
-  int p, p_irow, code_err, ainf_data;
+  int p, p_irow, ainf_data;
   int_t n, m_loc, fst_row;
   int_t i, j, k, irow, jcol;
   NRformat_loc *Astore;
   int_t  nnz_loc, nnz_iam;    /* number of local nonzeros */
-  int_t  nnz_remote; /* number of remote nonzeros to be sent */
+//  int_t  nnz_remote; /* number of remote nonzeros to be sent */
   int_t  SendCnt; /* number of remote nonzeros to be sent */
   int_t  RecvCnt; /* number of remote nonzeros to be received */
   /* number of nonzeros to send/receive per processor */
@@ -1269,6 +1269,7 @@ symbfact_distributeMatrix
     COUNT THE NUMBER OF NONZEROS TO BE SENT TO EACH PROCESS, THEN ALLOCATE
     SPACE.  THIS ACCOUNTS FOR THE FIRST PASS OF A.
     ----------------------------------------------------------------------*/
+	p = 0;
   /* tempArray stores the number of nonzeros in each column of ainf */
   for (i = 0; i < n; i++)
     tempArray[i] = 0;
@@ -1333,13 +1334,24 @@ symbfact_distributeMatrix
 
   /* setup ptr_toSnd[p] to point to data in snd_aind to be send to 
    processor p */
-  for (i = 0, j = 0, p = 0; p < nprocs_num; p++) {
-    if ( p != iam ) 
+   i = 0;
+   j = 0;
+  for (p = 0; p < nprocs_num; p++) {
+    if (p != iam) {
       ptr_toSnd[p] = i;
-    else
+	}
+	else {
       ptr_toSnd[p] = j;
-    i += nnzToSend[p]; 
-    j += nnzToRecv[p];
+    }
+#ifdef _MSC_VER
+#if _MSC_VER == 1900
+	printf("This compiler causes an internal compiler error with this section of code.\n");
+#endif
+#else
+	i += nnzToSend[p];
+	j += nnzToRecv[p];
+#endif // _MSC_VER
+
   }
 
   for (i = 0; i < n; i++) {
@@ -1820,7 +1832,7 @@ int symbfact_alloc
 {
   int    nlvls, p;  /* no of levels in the separator tree */
   int_t  lword, no_expand;
-  int_t  *xsup, *supno;
+  int_t  *supno;
   int_t  *lsub, *xlsub;
   int_t  *usub, *xusub;
   int_t  nzlmax, nzumax, nnz_a_loc;
@@ -1854,7 +1866,7 @@ int symbfact_alloc
     
     if ( nzumax < nnz_a_loc/2 ) {
       fprintf(stderr, "Not enough memory to perform factorization.\n");
-      return (PS->allocMem);
+      return (int)(PS->allocMem);
     }
     lsub  = (void *) SUPERLU_MALLOC(nzlmax * lword);
     usub  = (void *) SUPERLU_MALLOC(nzumax * lword);
@@ -1944,11 +1956,11 @@ symbfact_vtx
  )
 { 
   int_t x_aind_beg, x_aind_end;
-  int_t k, vtx_elt, ind, pr, pr_lid, mem_error, ii, jj, compRcvd;
+  int_t k, vtx_elt, ind, pr_lid, mem_error, compRcvd;
   int_t *xsub, *sub, *xsubPr, *subPr, *xsub_rcvd, *xsub_src, *sub_src;
   int_t pr_elt, next, prval_curvtx, maxNvtcsPProc;
   int_t  neltsVtx, neltsMatched, neltsZrVtx, neltsZrSn, neltsVtx_CSep;
-  int_t  neltsVtxInit, kk;
+  int_t  neltsVtxInit;
   int   diagind, upd_lstSn;
   
   maxNvtcsPProc = Pslu_freeable->maxNvtcsPProc;
@@ -2152,7 +2164,7 @@ updateRcvd_prGraph
 )
 {
   int_t i, k, nelts, prVal, vtx_elt, vtx_elt_lid, ind;
-  int_t vtx, vtx_lid, fstVtx_toUpd_lid, fstVtx_srcUpd_lid;
+  int_t vtx, vtx_lid, fstVtx_toUpd_lid;
   int_t *xsub, *sub, *xsub_rcvd, *xsubPr, *subPr, szsubPr, *p_indsubPr;
   int_t maxNvtcsPProc, *globToLoc, mem_error;
   int_t nvtcs_toUpd, fstVtx_srcUpd, vtx_lid_p;
@@ -2409,13 +2421,13 @@ blk_symbfact
 {
   int szSep_tmp, lvl_tmp, ii, jj;
   int_t  *xlsubPr, *xusubPr; 
-  int_t  *xsup, *supno, *lsub, *xlsub, *usub, *xusub;
-  int_t  vtx_lid, vtx_prid, vtx, vtx_super, vtx_elt, maxNvtcsPProc;
-  int_t  ind, pr, pr_elt, newnext, k, vtx_elt_lid;
+  int_t  *supno, *lsub, *xlsub, *usub, *xusub;
+  int_t  vtx_lid, vtx_prid, vtx, vtx_elt, maxNvtcsPProc;
+  int_t  newnext, k;
   int_t  nextl, nextu, nsuper_loc, nvtcs, n, mem_error;
-  int_t  x_aind_beg, x_aind_end, i, szLp, xlsub_snp1, xusub_snp1;
+  int_t  i, szLp, xlsub_snp1, xusub_snp1;
   int_t  snrep, snrep_lid, szsn, vtxp1, *globToLoc, domain_symb;
-  int_t lstVtx, neltsCurSep, maxNeltsVtx, fstVtx_loc_lid;
+  int_t lstVtx, maxNeltsVtx, fstVtx_loc_lid;
   /* supernode relaxation parameters */
   int_t  neltsVtx_L, neltsZrVtx_L, neltsMatched_L, neltsVtx_CSep_L;
   int_t  neltsVtx_U, neltsZrVtx_U, neltsMatched_U, neltsVtx_CSep_U;
@@ -2870,17 +2882,16 @@ initLvl_symbfact
  int_t  nextu
  ) 
 {
-  int_t *cntelt_vtcs, x_aind_beg, x_aind_end, x_aind_beg_l, x_aind_beg_u,
+  int_t *cntelt_vtcs, x_aind_end, x_aind_beg_l, x_aind_beg_u,
     nelts_asup, nelts_ainf;
   int_t nvtcsLvl_loc, fstVtx_loc, fstVtx_loc_lid, fstVtx_nextLvl;
   int_t curblk_loc, nblks_loc, ind_blk;
   int_t *lsub, *xlsub, *usub, *xusub;
-  int_t *begEndBlks_loc, code_err, mem_error;
-  int_t i, j, k, vtx, vtx_lid, fstVtx_blk, lstVtx_blk, vtx_elt, p, fill;
+  int_t *begEndBlks_loc, mem_error;
+  int_t k, vtx, vtx_lid, fstVtx_blk, lstVtx_blk, fill;
   int_t nelts, nelts_fill_l, nelts_fill_u, nelts_cnts, maxNvtcsPProc, *globToLoc;
   int_t use_fillcnts, cntelt_vtx_l, cntelt_vtx_u;
-  MPI_Status status;
-  
+ 
   fill = PS->fill_par;
   VInfo->filledSep = FALSE;
   
@@ -3225,7 +3236,7 @@ rl_update
   int_t fstVtx_toUpd_lid, markl, elt, vtx_loc, ind_blk;
   int_t *xusubPr, *usubPr, *xlsub, *lsub, *xusub, *usub;
   int_t fstVtx_upd, lstVtx_upd, maxNvtcsPProc, *globToLoc;
-  int_t fstVtx_srcUpd_lid, nelts_vtx, expand;
+  int_t fstVtx_srcUpd_lid;
   
   /* quick return */
   if (fstVtx_toUpd >= lstVtx_toUpd)
@@ -3662,7 +3673,7 @@ dnsCurSep_symbfact
     fstVtx, lstVtx, lstVtx_dns_lid;
   int_t ind_blk, i, vtx, vtx_lid, vtx_lid_x, nvtcs_upd, save_cnt, mem_error;
   int_t computeL, computeU, vtx_elt, j, cur_blk, snlid, snrep;
-  int_t *sub, *xsub, *minElt_vtx, *cntelt_vtcs;
+  int_t *sub, *xsub, *minElt_vtx;
   int_t mark, next, *x_newelts, *x_newelts_L, *x_newelts_U;
   int_t *newelts_L, *newelts_U, *newelts;
   int_t *globToLoc, maxNvtcsPProc, lvl;
@@ -4007,7 +4018,7 @@ dnsCurSep_symbfact
   if (newelts_L) SUPERLU_FREE (newelts_L);
   if (newelts_U) SUPERLU_FREE (newelts_U);
   if (PS->szDnsSep < mem_dnsCS)
-    PS->szDnsSep = mem_dnsCS;
+    PS->szDnsSep = (int)mem_dnsCS;
 
   return 0;
 }
@@ -4164,20 +4175,19 @@ interLvl_symbfact
   int   nprocsLvl, rcvdP, p, filledSep_lvl;
   int   toSend, toSendL, toSendU;
   int_t *rcv_interLvl;
-  int_t *snd_interLvl, *snd_interLvl1, *snd_interLvl2,
+  int_t *snd_interLvl,
     snd_interLvlSz, snd_LinterLvlSz, snd_vtxLvl;
   int_t  vtx_elt, update_loc, code_err;
   int_t *lsub, *xlsub, *usub, *xusub;
   int_t *lsub_rcvd, lsub_rcvd_sz, *usub_rcvd, usub_rcvd_sz;
   int_t  n, mark, max_rcvSz; 
-  int_t nextl, nextu, ind_blk, vtx_lid, k, count, nelts, 
+  int_t nextl, nextu, ind_blk, vtx_lid, k, nelts, 
     lstVtxLvl_loc, lstVtxLvl_loc_lid, mem_error;
   int_t fstVtx_blk, lstVtx_blk, i, j, vtx, prElt_L, prElt_U, 
-    snd_indBlk, prElt_ind;
+    snd_indBlk;
   int_t fstVtxLvl_loc, nvtcsLvl_loc, maxNvtcsPProc, *globToLoc, 
     fstVtx, lstVtx;
   int  ind1, nprocsToRcv, nprocsToSnd, ind2, ind_l, ind_u, ij, ik;
-  int_t req_ind, sent_msgs, req_ind_snd;
   int_t initInfo_loc[2], initInfo_gl[2];
 
   /* Initialization */
@@ -4552,8 +4562,8 @@ freeComm
  MPI_Comm *symb_comm /* Input - communicator for symbolic factorization */
  )
 {
-  int szSep, i, j, k;
-  int np, npNode, fstP, lstP, ind;
+  int szSep, i, j;
+  int npNode, fstP, lstP, ind;
 
   i = 2 * nprocs - 2;
   MPI_Comm_free (&(commLvls[i]));
@@ -4588,8 +4598,8 @@ createComm
  MPI_Comm *symb_comm
  )
 {
-  int szSep, i, j, jj, k, *pranks;
-  int np, npNode, fstP, lstP, p, code_err, ind, col, key;
+  int szSep, i, j, *pranks;
+  int npNode, fstP, lstP, ind, col, key;
   
   for (i=0; i < 2*nprocs; i++)
     commLvls[i] = MPI_COMM_NULL;
@@ -4659,17 +4669,17 @@ intraLvl_symbfact
 {
   int nprocsLvl, p, prvP, rcvP;
   int toSend, rcvd_prvP, index_req[2];
-  int_t fstVtx_loc_lid, fstVtx_loc, vtx, vtxLvl, curblk_loc, denseSep;
+  int_t fstVtx_loc_lid, fstVtx_loc, vtx, denseSep;
   int_t fstVtx_blk, fstVtx_blk_lid, lstVtx_blk, lstVtx_blk_lid, tag;
   int_t nvtcs_blk, xusub_end, xlsub_end, prv_fstVtx_blk;
   int_t n;
   int_t *rcv_intraLvl, *snd_intraLvl;
   int_t *lsub_rcvd, lsub_rcvd_sz, *usub_rcvd, usub_rcvd_sz;
   int_t nmsgsRcvd, nmsgsTRcv, sz_msg;
-  int_t nvtcsLvl_loc, nextl, nextu, ind_blk, snd_vtxLvl, maxNeltsVtx_in;
-  int_t count, vtx_loc, mem_error, lstBlkRcvd;
-  int_t fstVtx_blk_loc, fstBlk, vtx_lid, prElt, nelts, j, nvtcs_toUpd;
-  int_t snd_LinterLvlSz, fstVtx_blk_loc_lid, prElt_ind, maxNmsgsToRcv;
+  int_t nvtcsLvl_loc, nextl, nextu, maxNeltsVtx_in;
+  int_t mem_error, lstBlkRcvd;
+  int_t vtx_lid, nelts, j, nvtcs_toUpd;
+  int_t maxNmsgsToRcv;
   int_t *xlsub, *xusub, *lsub, *usub;
   int_t *globToLoc, maxNvtcsPProc, nblk_loc, upd_myD, r, fstVtx_blkCyc;
   int_t k, prElt_L, prElt_U, vtx_elt, fstVtx_toUpd;
@@ -5149,16 +5159,16 @@ estimate_memUsage
  )
 {
   int_t nvtcs_loc, lword, nsuper_loc;
-  float lu_mem, other_mem, overestimMem;
+  float lu_mem, overestimMem;
   
   nvtcs_loc = VInfo->nvtcs_loc;
   nsuper_loc = Pslu_freeable->supno_loc[nvtcs_loc];
   lword     = sizeof(int_t);
   
   /* memory for xlsub, xusub, supno_loc, cntelt_vtcs */
-  lu_mem = 4.0 * (float) nvtcs_loc * (float) lword;
+  lu_mem = (float)4.0 * (float) nvtcs_loc * (float) lword;
   /* memory for xlsubPr, xusubPr */
-  lu_mem += 2.0 * (float) VInfo->maxNvtcsNds_loc * (float) lword;
+  lu_mem += (float)2.0 * (float) VInfo->maxNvtcsNds_loc * (float) lword;
   
   if (PS->estimLSz < Llu_symbfact->xlsub[nvtcs_loc])
     PS->estimLSz = Llu_symbfact->xlsub[nvtcs_loc];
