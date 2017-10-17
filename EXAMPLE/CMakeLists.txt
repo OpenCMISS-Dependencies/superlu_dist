@@ -5,7 +5,7 @@ macro(LINK TARGET)
     if (UNIX)
         target_link_libraries(${TARGET} PRIVATE m)
     endif()
-    add_test(${TARGET} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NF} ${TARGET} ${TESTMATRIX})
+    add_test(${TARGET} ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NF} ./${TARGET} ${TESTMATRIX})
 endmacro()
 
 FILE(COPY g20.rua DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

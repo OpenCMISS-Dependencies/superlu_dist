@@ -82,8 +82,7 @@ add_library(superlu_dist ${OBJS})
 target_compile_definitions(superlu_dist PUBLIC $<BUILD_INTERFACE:${COMPDEFS}>)
 target_link_libraries(superlu_dist 
     PUBLIC $<BUILD_INTERFACE:blas>
-    $<BUILD_INTERFACE:${MPI_C_LIBRARIES}>
-    $<BUILD_INTERFACE:${MPI_Fortran_LIBRARIES}>
+    mpi-c
 )
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
