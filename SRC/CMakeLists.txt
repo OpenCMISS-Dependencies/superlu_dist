@@ -110,13 +110,13 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake 
     "include(CMakeFindDependencyMacro)\r\n"
     	"set(${PROJECT_NAME}_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
-    "find_dependency(BLAS ${BLAS_VERSION})\r\n"
+    "set(BLAS_FIND_SYSTEM ${BLAS_FIND_SYSTEM})\r\nfind_dependency(BLAS ${BLAS_VERSION})\r\n"
 )
 if (USE_PARMETIS)
-    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(PARMETIS ${PARMETIS_VERSION})\r\n")
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "set(PARMETIS_FIND_SYSTEM ${PARMETIS_FIND_SYSTEM})\r\nfind_dependency(PARMETIS ${PARMETIS_VERSION})\r\n")
 endif()
 if (USE_METIS)
-    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(METIS ${METIS_VERSION})\r\n")
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "set(METIS_FIND_SYSTEM ${METIS_FIND_SYSTEM})\r\nfind_dependency(METIS ${METIS_VERSION})\r\n")
 endif()
 if (WITH_OPENMP)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(OpenMP)\r\n")
