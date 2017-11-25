@@ -50,7 +50,7 @@ add_library(auxiliary OBJECT ${ALLAUX} ${LAAUX})
 target_compile_definitions(auxiliary PRIVATE ${COMPDEFS})
 target_include_directories(auxiliary PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
-         $<TARGET_PROPERTY:mpi-c,INTERFACE_INCLUDE_DIRECTORIES>
+         $<TARGET_PROPERTY:MPI::MPI_C,INTERFACE_INCLUDE_DIRECTORIES>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
@@ -61,7 +61,7 @@ if(BUILD_PRECISION MATCHES [d])
     target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
     target_include_directories(slud_d PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
-         $<TARGET_PROPERTY:mpi-c,INTERFACE_INCLUDE_DIRECTORIES>
+         $<TARGET_PROPERTY:MPI::MPI_C,INTERFACE_INCLUDE_DIRECTORIES>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
@@ -73,7 +73,7 @@ if(BUILD_PRECISION MATCHES [z])
     target_compile_definitions(slud_z PUBLIC ${COMPDEFS})
     target_include_directories(slud_z PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
-         $<TARGET_PROPERTY:mpi-c,INTERFACE_INCLUDE_DIRECTORIES>
+         $<TARGET_PROPERTY:MPI::MPI_C,INTERFACE_INCLUDE_DIRECTORIES>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
@@ -85,7 +85,7 @@ add_library(superlu_dist ${OBJS})
 target_compile_definitions(superlu_dist PUBLIC $<BUILD_INTERFACE:${COMPDEFS}>)
 target_link_libraries(superlu_dist 
     PUBLIC $<BUILD_INTERFACE:blas>
-    mpi-c
+    MPI::MPI_C
 )
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
