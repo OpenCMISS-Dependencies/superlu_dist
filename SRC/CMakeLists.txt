@@ -50,6 +50,7 @@ add_library(auxiliary OBJECT ${ALLAUX} ${LAAUX})
 target_compile_definitions(auxiliary PRIVATE ${COMPDEFS})
 target_include_directories(auxiliary PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
+         $<TARGET_PROPERTY:MPI::MPI_C,INTERFACE_INCLUDE_DIRECTORIES>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
@@ -60,6 +61,7 @@ if(BUILD_PRECISION MATCHES [d])
     target_compile_definitions(slud_d PUBLIC ${COMPDEFS})
     target_include_directories(slud_d PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
+         $<TARGET_PROPERTY:MPI::MPI_C,INTERFACE_INCLUDE_DIRECTORIES>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
@@ -71,6 +73,7 @@ if(BUILD_PRECISION MATCHES [z])
     target_compile_definitions(slud_z PUBLIC ${COMPDEFS})
     target_include_directories(slud_z PRIVATE
          #$<$<BOOL:${USE_METIS}>:$<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
+         $<TARGET_PROPERTY:MPI::MPI_C,INTERFACE_INCLUDE_DIRECTORIES>
          $<$<BOOL:${USE_PARMETIS}>:
              $<TARGET_PROPERTY:parmetis,INTERFACE_INCLUDE_DIRECTORIES>
              $<TARGET_PROPERTY:metis,INTERFACE_INCLUDE_DIRECTORIES>>
@@ -82,8 +85,7 @@ add_library(superlu_dist ${OBJS})
 target_compile_definitions(superlu_dist PUBLIC $<BUILD_INTERFACE:${COMPDEFS}>)
 target_link_libraries(superlu_dist 
     PUBLIC $<BUILD_INTERFACE:blas>
-    $<BUILD_INTERFACE:${MPI_C_LIBRARIES}>
-    $<BUILD_INTERFACE:${MPI_Fortran_LIBRARIES}>
+    MPI::MPI_C
 )
 if (USE_PARMETIS)
     target_link_libraries(superlu_dist PUBLIC parmetis metis)
@@ -108,13 +110,13 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake 
     "include(CMakeFindDependencyMacro)\r\n"
     	"set(${PROJECT_NAME}_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
-    "find_dependency(BLAS ${BLAS_VERSION})\r\n"
+    "set(BLAS_FIND_SYSTEM ${BLAS_FIND_SYSTEM})\r\nfind_dependency(BLAS ${BLAS_VERSION})\r\n"
 )
 if (USE_PARMETIS)
-    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(PARMETIS ${PARMETIS_VERSION})\r\n")
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "set(PARMETIS_FIND_SYSTEM ${PARMETIS_FIND_SYSTEM})\r\nfind_dependency(PARMETIS ${PARMETIS_VERSION})\r\n")
 endif()
 if (USE_METIS)
-    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(METIS ${METIS_VERSION})\r\n")
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "set(METIS_FIND_SYSTEM ${METIS_FIND_SYSTEM})\r\nfind_dependency(METIS ${METIS_VERSION})\r\n")
 endif()
 if (WITH_OPENMP)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/superlu_dist-config-dependencies.cmake "find_dependency(OpenMP)\r\n")
